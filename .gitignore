@@ -1,0 +1,27 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/CleanArch/DesignTimeBuild
+/.vs/CleanArch/FileContentIndex
+/.vs/ProjectEvaluation
+/bin/Debug
+/.vs/CleanArch/v17
+/obj
+/src/Application/bin/Debug/net8.0
+/src/Application/obj
+/src/ApplicationCore/bin/Debug/net8.0
+/src/ApplicationCore/obj/Debug/net8.0
+/src/ApplicationCore/obj
+/src/Infrastructure/bin/Debug/net8.0
+/tests/Application.UnitTests/bin/Debug/net8.0
+/tests/Domain.UnitTests/bin/Debug/net8.0
+/tests/WebAcceptanceTests/.vs
+/tests/WebAcceptanceTests/bin/Debug/net8.0
+/tests/WebAcceptanceTests/obj
+/tests/Application.UnitTests/obj
+/tests/Domain.UnitTests/obj
+/src/WebApp/obj
+/src/WebApp/bin/Debug/net8.0
+/src/WebApp/WebApp.csproj.user
+/src/Infrastructure/obj
