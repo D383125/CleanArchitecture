@@ -26,7 +26,11 @@ namespace WebApp.MinimalApiEndpoints
                 await context.SaveChangesAsync(ct);
 
                 return Results.Ok(product);
-            });
+            })
+            .WithName("CreateProduct")
+            .WithTags("Products")
+            .Produces<Product>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest);
 
             app.MapGet("products", async (
                 ApplicationDbContext context,
@@ -41,7 +45,10 @@ namespace WebApp.MinimalApiEndpoints
                     .ToListAsync(ct);
 
                 return Results.Ok(products);
-            });
+            })
+            .WithName("GetProducts")
+            .WithTags("Products")
+            .Produces<IEnumerable<Product>>(StatusCodes.Status200OK);
 
             app.MapGet("products/{id}", async (
                 int id,
@@ -57,12 +64,16 @@ namespace WebApp.MinimalApiEndpoints
                             .FirstOrDefaultAsync(p => p.Id == id, token);
 
                         return product;
-                    },                    
+                    },
                     CacheOptions.DefaultExpiration,
                     ct);
 
                 return product is null ? Results.NotFound() : Results.Ok(product);
-            });
+            })
+            .WithName("GetProductById")
+            .WithTags("Products")
+            .Produces<Product>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound);
 
             app.MapPut("products/{id}", async (
                 int id,
@@ -87,7 +98,11 @@ namespace WebApp.MinimalApiEndpoints
                 await cache.RemoveAsync($"products-{id}", ct);
 
                 return Results.NoContent();
-            });
+            })
+            .WithName("UpdateProduct")
+            .WithTags("Products")
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound);
 
             app.MapDelete("products/{id}", async (
                 int id,
@@ -110,7 +125,11 @@ namespace WebApp.MinimalApiEndpoints
                 await cache.RemoveAsync($"products-{id}", ct);
 
                 return Results.NoContent();
-            });
+            })
+            .WithName("DeleteProduct")
+            .WithTags("Products")
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound);
         }
     }
 }

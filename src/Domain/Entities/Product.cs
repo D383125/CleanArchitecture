@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
+    
     public sealed class Product
     {
         public int Id { get; set; }

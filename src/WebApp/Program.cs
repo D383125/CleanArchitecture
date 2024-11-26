@@ -1,14 +1,17 @@
 using Domain;
 using Domain.Extensions;
 using Microsoft.EntityFrameworkCore;
+using WebApp.MinimalApiEndpoints;
+using WebApp.Startup;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddWebServices();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<ApplicationDbContext>(
@@ -34,5 +37,10 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseHealthChecks("/health");
+
+//Map Minimal endpoints
+app.MapProductEndpoints();
 
 app.Run();

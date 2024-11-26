@@ -25,3 +25,5 @@
 /src/WebApp/bin/Debug/net8.0
 /src/WebApp/WebApp.csproj.user
 /src/Infrastructure/obj
+/src/Domain/bin/Debug/net8.0
+/src/Domain/obj
