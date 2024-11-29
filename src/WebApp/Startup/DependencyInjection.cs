@@ -1,6 +1,8 @@
 ﻿using Domain;
+using Domain.Attributes;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
+using OpenAI;
+using System.Reflection;
 
 namespace WebApp.Startup
 {
@@ -44,6 +46,41 @@ namespace WebApp.Startup
 //            });
 
             return services;
+        }
+
+        public static IServiceCollection RegisterDIAttributes(this IServiceCollection services, Assembly assembly)
+        {
+            var typesWithDiAttribute = assembly.GetTypes()
+                .Where(type => (type.IsClass || type.IsInterface) && !type.IsAbstract && type.GetCustomAttribute<DIAttribute>() != null);
+
+            foreach (var type in typesWithDiAttribute)
+            {
+                var attribute = type.GetCustomAttribute<DIAttribute>();
+                var lifetime = attribute!.Lifetime;
+
+                // Register the type based on the specified lifetime
+                switch (lifetime)
+                {
+                    case ServiceLifetime.Singleton:
+                        services.AddSingleton(type);
+                        break;
+                    case ServiceLifetime.Scoped:
+                        services.AddScoped(type);
+                        break;
+                    case ServiceLifetime.Transient:
+                    default:
+                        services.AddTransient(type);
+                        break;
+                }
+            }
+
+            return services;
+        }
+
+        public static void RegisterExternalApis(this IServiceCollection services, ConfigurationManager configurationManager)
+        {
+            string apiKey = configurationManager["ApplicationSettings:openAIKey"];
+            services.AddTransient(provider => new OpenAIClient(apiKey));
         }
     }
 }

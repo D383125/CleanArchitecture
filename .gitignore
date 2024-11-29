@@ -27,3 +27,4 @@
 /src/Infrastructure/obj
 /src/Domain/bin/Debug/net8.0
 /src/Domain/obj
+/src/node_modules
