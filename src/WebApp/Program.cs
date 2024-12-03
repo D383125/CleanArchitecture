@@ -1,6 +1,8 @@
 using Application.Modules;
-using Domain;
 using Domain.Extensions;
+using Infrastructure;
+using Infrastructure.AiProviders;
+using Infrastructure.Configuration;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using WebApp.MinimalApiEndpoints;
@@ -12,18 +14,25 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddWebServices();
-builder.Services.RegisterExternalApis(builder.Configuration);
-builder.Services.RegisterDIAttributes(Assembly.GetAssembly(typeof(ChatAssistantModule)));
+
+builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.RegisterDIAttributes([Assembly.GetAssembly(typeof(ChatAssistantModule)), Assembly.GetAssembly(typeof(ChatGdpClient))]);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<ApplicationDbContext>(
-    options => options.UseNpgsql(builder.Configuration.GetConnectionString("Database"))
-    );
+
+builder.Services.Configure<ApplicationOptions>(builder.Configuration.GetSection("Application"));
+builder.Services.AddOptions<ApplicationOptions>()
+    .Bind(builder.Configuration.GetSection("Application"))
+    .ValidateDataAnnotations() // Validates [Required] and other annotations
+    .Validate(options => !string.IsNullOrWhiteSpace(options.OpenAIKey), "OpenAIKey is required.");
+
 
 builder.Services.AddStackExchangeRedisCache(options =>
     options.Configuration = builder.Configuration.GetConnectionString("Cache")
 );
+
 
 var app = builder.Build();
 

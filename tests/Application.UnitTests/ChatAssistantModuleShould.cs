@@ -1,49 +1,27 @@
+using Application.Common.Interface;
 using Application.Modules;
-using Moq;
-using OpenAI;
-using OpenAI.Chat;
-using System.ClientModel;
-using System.Threading.Channels;
+using Application.UnitTests.MockServices;
 
 namespace Application.UnitTests
 {
     public class ChatAssistantModuleShould
     {
-        
-            [Fact]        
-            public async Task StreamChatCompletionAsync_ShouldThrowNullException()
+        [Fact]        
+        public async Task ReturnConversationFromStreamChatCompletionAsync()
+        {            
+            IChatClient mockChatClient = new MockChatClient();
+            var sut = new ChatAssistantModule(mockChatClient);
+                                    
+            var anyParms = new Dictionary<string, string>();
+            anyParms.Add("User", "Hello");
+
+            List<string> results = new List<string>();
+            await foreach(var chunk in sut.StreamChatCompletionAsync(anyParms, string.Empty))
             {
-            
-                var mockChatClient = new Mock<ChatClient>();
-                var mockOpenAiClient = new Mock<OpenAIClient>();
+                results.Add(chunk);
+            }
 
-            // Simulating the behavior of CompleteChatStreamingAsync to return predefined updates.
-            mockChatClient
-                .Setup(c => c.CompleteChatStreamingAsync(It.IsAny<ChatMessage>()));
-                //.Returns(); //TODO: Need to simulate repsone but its cloesed. USe adaptor?
-
-            mockOpenAiClient
-                .Setup(factory => factory.GetChatClient(It.IsAny<string>()))
-                .Returns(mockChatClient.Object);
-
-            var chatService = new ChatAssistantModule(mockOpenAiClient.Object);
-            var userMessage = ChatMessage.CreateUserMessage("Hello");
-            mockOpenAiClient.Setup(c => c.GetChatClient(It.IsAny<string>())).Returns(mockChatClient.Object);            
-            
-            // Act
-            var results = new List<string>();
-            //Assert.Throws<NullReferenceException>(() => chatService.StreamChatCompletionAsync(new List<ChatMessage> { userMessage }));
-            //await foreach (var result in chatService.StreamChatCompletionAsync(new List<ChatMessage> { userMessage }))
-            //{
-            //    results.Add(result);
-            //}
-            //);
-            var result = chatService.StreamChatCompletionAsync(new List<ChatMessage> { userMessage });
-
-            // Assert
-            //Assert.Equal(new[] { "Hello", "World" }, results);
-            //Assert.Equal(result.GetAsyncEnumerator())
-
+            Assert.Equal(new[] { "Hello", "How are you?" }, results);  
         }        
     }    
 }

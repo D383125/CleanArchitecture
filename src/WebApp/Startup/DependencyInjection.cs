@@ -1,7 +1,6 @@
 ﻿using Domain;
 using Domain.Attributes;
 using Microsoft.AspNetCore.Mvc;
-using OpenAI;
 using System.Reflection;
 
 namespace WebApp.Startup
@@ -15,8 +14,8 @@ namespace WebApp.Startup
 
             services.AddHttpContextAccessor();
 
-            services.AddHealthChecks()
-                .AddDbContextCheck<ApplicationDbContext>();
+            services.AddHealthChecks();
+                //.AddDbContextCheck<ApplicationDbContext>();
 
             //services.AddExceptionHandler<CustomExceptionHandler>();
             
@@ -48,28 +47,46 @@ namespace WebApp.Startup
             return services;
         }
 
-        public static IServiceCollection RegisterDIAttributes(this IServiceCollection services, Assembly assembly)
+        public static IServiceCollection RegisterDIAttributes(this IServiceCollection services, Assembly[] assembly)
         {
-            var typesWithDiAttribute = assembly.GetTypes()
-                .Where(type => (type.IsClass || type.IsInterface) && !type.IsAbstract && type.GetCustomAttribute<DIAttribute>() != null);
+            var typesWithDiAttribute = assembly.SelectMany(a => a.GetTypes()
+                .Where(type => (type.IsClass || type.IsInterface)  && !type.IsAbstract && type.GetCustomAttribute<DIAttribute>() != null));
 
             foreach (var type in typesWithDiAttribute)
             {
                 var attribute = type.GetCustomAttribute<DIAttribute>();
-                var lifetime = attribute!.Lifetime;
+                var lifetime = attribute!.Lifetime;                
 
                 // Register the type based on the specified lifetime
                 switch (lifetime)
                 {
                     case ServiceLifetime.Singleton:
-                        services.AddSingleton(type);
-                        break;
-                    case ServiceLifetime.Scoped:
-                        services.AddScoped(type);
+                        if(attribute.ImplimentingType != null)
+                        {
+                            services.AddSingleton(attribute.ImplimentingType, type);
+                        }
+                        else
+                        {
+                            services.AddSingleton(type);
+                        }                        
                         break;
                     case ServiceLifetime.Transient:
-                    default:
-                        services.AddTransient(type);
+                        if (attribute.ImplimentingType != null)
+                            services.AddTransient(attribute.ImplimentingType, type);
+                        else
+                            services.AddTransient(type);
+                        break;
+
+                    case ServiceLifetime.Scoped:
+                    default:                    
+                        if (attribute.ImplimentingType != null)
+                        {
+                            services.AddScoped(attribute.ImplimentingType, type);
+                        }
+                        else
+                        {
+                            services.AddScoped(type);
+                        }
                         break;
                 }
             }
@@ -77,10 +94,10 @@ namespace WebApp.Startup
             return services;
         }
 
-        public static void RegisterExternalApis(this IServiceCollection services, ConfigurationManager configurationManager)
-        {
-            string apiKey = configurationManager["ApplicationSettings:openAIKey"];
-            services.AddTransient(provider => new OpenAIClient(apiKey));
-        }
+        //public static void RegisterExternalApis(this IServiceCollection services, ConfigurationManager configurationManager)
+        //{
+        //    string apiKey = configurationManager["ApplicationSettings:openAIKey"];
+        //    //services.AddTransient(provider => new ChatGdpClient(apiKey));
+        //}
     }
 }

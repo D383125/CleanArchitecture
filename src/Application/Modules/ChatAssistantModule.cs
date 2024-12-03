@@ -1,33 +1,28 @@
 ﻿using Domain.Attributes;
-using OpenAI.Chat;
-using OpenAI;
-using System.ClientModel;
-
+using Application.Common.Interface;
 
 namespace Application.Modules
 {
     [DI]
     public sealed class ChatAssistantModule
     {
-        private readonly OpenAIClient _client;        
-        public ChatAssistantModule(OpenAIClient client)
+        private readonly IChatClient _chatClient;
+        public ChatAssistantModule(IChatClient chatClient)
         {
-            _client = client;
+            _chatClient = chatClient;
         }
 
-        public async IAsyncEnumerable<string> StreamChatCompletionAsync(List<ChatMessage> messages, string model = "gpt-4")
-        {
-            var client = _client.GetChatClient(model);
+        public async IAsyncEnumerable<string> StreamChatCompletionAsync(IDictionary<string, string> messages, string model)
+        {            
+            var completionUpdates = _chatClient.CompleteChatStreaming(messages, model);
 
-            AsyncCollectionResult<StreamingChatCompletionUpdate> completionUpdates = client.CompleteChatStreamingAsync(messages);
-            
-            await foreach (StreamingChatCompletionUpdate completionUpdate in completionUpdates)
+            await foreach (var completionUpdate in completionUpdates)
             {
-                if (completionUpdate.ContentUpdate.Count > 0)
+                if (completionUpdate != null)
                 {
-                    yield return completionUpdate.ContentUpdate[0].Text;                    
+                    yield return completionUpdate;
                 }
-            }
+            }         
         }
     }
 }

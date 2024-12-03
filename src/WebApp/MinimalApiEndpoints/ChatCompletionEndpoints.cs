@@ -1,5 +1,6 @@
 ﻿using Application.Modules;
 using OpenAI.Chat;
+using System.Runtime.InteropServices;
 using WebApp.Contracts;
 
 namespace WebApp.MinimalApiEndpoints
@@ -14,20 +15,10 @@ namespace WebApp.MinimalApiEndpoints
                 try
                 {
                     context.Response.ContentType = "text/plain";
-                    
-                    var nativeMessages = chatRequest.Messages.Select<ChatCompletionMessage, ChatMessage>
-                    (m =>
-                    {
-                        return m.Role.ToLower() switch
-                        {
-                            "user" => ChatMessage.CreateUserMessage(m.Content),
-                            "assistant" => ChatMessage.CreateAssistantMessage(m.Content),
-                            "system" => ChatMessage.CreateSystemMessage(m.Content),
-                            _ => throw new ArgumentException($"Invalid role: {m.Role}")
-                        };
-                    }).ToList();
-
-                    await foreach (var chunk in chatAssistant.StreamChatCompletionAsync(nativeMessages, "o1-mini"))
+                    IDictionary<string, string> nativeMessages = chatRequest.Messages
+                        .Select(m => new KeyValuePair<string, string>(m.Role, m.Content))
+                        .ToDictionary();
+                    await foreach (var chunk in chatAssistant.StreamChatCompletionAsync(nativeMessages, "gpt-4"))
                     {
                         await context.Response.WriteAsync(chunk);
                         await context.Response.Body.FlushAsync(); // Ensure chunks are sent immediately
