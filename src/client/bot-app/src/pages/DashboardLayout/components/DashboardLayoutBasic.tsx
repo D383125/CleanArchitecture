@@ -28,11 +28,16 @@ const NAVIGATION: Navigation = [
     title: 'Chat',
     icon: <ChatIcon />,    
 
+  },  
+  {
+    segment: 'train',
+    title: 'Train Model',
+    icon: <DescriptionIcon />,
   },
   {
     kind: 'divider',
   },
-  {
+/*   {
     kind: 'header',
     title: 'Analytics',
   },
@@ -57,7 +62,7 @@ const NAVIGATION: Navigation = [
     segment: 'integrations',
     title: 'Integrations',
     icon: <LayersIcon />,
-  },
+  }, */
 ];
 
 const demoTheme = createTheme({

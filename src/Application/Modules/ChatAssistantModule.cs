@@ -12,7 +12,7 @@ namespace Application.Modules
             _chatClient = chatClient;
         }
 
-        public async IAsyncEnumerable<string> StreamChatCompletionAsync(IDictionary<string, string> messages, string model)
+        public async IAsyncEnumerable<string> StreamChatCompletionAsync(IEnumerable<KeyValuePair<string, string>> messages, string model)
         {            
             var completionUpdates = _chatClient.CompleteChatStreaming(messages, model);
 

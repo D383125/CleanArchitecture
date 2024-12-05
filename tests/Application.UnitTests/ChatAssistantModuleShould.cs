@@ -10,13 +10,10 @@ namespace Application.UnitTests
         public async Task ReturnConversationFromStreamChatCompletionAsync()
         {            
             IChatClient mockChatClient = new MockChatClient();
-            var sut = new ChatAssistantModule(mockChatClient);
-                                    
-            var anyParms = new Dictionary<string, string>();
-            anyParms.Add("User", "Hello");
+            var sut = new ChatAssistantModule(mockChatClient);                                                
 
-            List<string> results = new List<string>();
-            await foreach(var chunk in sut.StreamChatCompletionAsync(anyParms, string.Empty))
+            List<string> results = new();
+            await foreach(var chunk in sut.StreamChatCompletionAsync(new Dictionary<string, string>(), string.Empty))
             {
                 results.Add(chunk);
             }

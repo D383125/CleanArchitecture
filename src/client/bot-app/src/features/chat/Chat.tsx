@@ -1,13 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Avatar, Box, Button, Container, Paper, TextField, Typography } from '@mui/material';
+import { Avatar, Box, Button, CircularProgress, Container, Paper, TextField, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
+import { ChatCompletionRequest } from './types';
+import { postChatCompletion } from './network';
 
-interface ChatMessage {
+interface ChatSummaryMessage {
   id: number;
   creater?: string;
   primary: string;
@@ -15,7 +17,15 @@ interface ChatMessage {
   avatar: string;
 }
 
-const initialChatMessages: ChatMessage[] = [
+type creater = "user" | "assistant"
+
+interface ChatMessage {
+  id: number
+  creater: creater
+  text: string
+}
+
+const initialChatMessages: ChatSummaryMessage[] = [
   { id: 1, primary: 'Chat 1', secondary: 'Blah blah blah', avatar: '/static/images/avatar/5.jpg' },
   { id: 2, primary: 'Chat 2', secondary: 'Lorem ipsum dolor', avatar: '/static/images/avatar/6.jpg' },
 ];
@@ -47,13 +57,16 @@ const muiStyles = {
     flex: 1,
     p: 2,
     overflowY: 'auto',
+    display: 'flex', // Add flex layout
+    flexDirection: 'column', // Stack messages vertically
+    gap: 1, // Optional spacing between messages
   },
   chatMessage: (isUser: boolean) => ({
     p: 1,
     mb: 1,
     borderRadius: 2,
     maxWidth: '70%',
-    alignSelf: isUser ? 'flex-end' : 'flex-start',
+    alignSelf: isUser ? 'flex-end' : 'flex-start', // Align based on the sender
     backgroundColor: isUser ? 'primary.light' : 'grey.200',
   }),
   inputBox: {
@@ -68,44 +81,99 @@ const muiStyles = {
   },
 };
 
-const Chat = () => {
-  const [chatMessages, setChatMessages] = useState(initialChatMessages);
-  const [selectedChat, setSelectedChat] = useState<ChatMessage | null>(initialChatMessages[0]);
-  const [currentChatHistory, setCurrentChatHistory] = useState([
-    { id: 1, text: 'Hello, how are you?' },
-    { id: 2, text: 'I’m doing well, thanks!' },
-  ]);
-  const [newMessage, setNewMessage] = useState('');
 
- useEffect(() => {
-    console.log(`Chat Compoment mounted.`)
+const Chat = () => {
+  const [currentMessage, setCurrentMessage] = useState<string>(''); // For accumulated streamed message
+  const [isStreaming, setIsStreaming] = useState<boolean>(false);
+  const [chatMessages, setChatMessages] = useState(initialChatMessages);
+  const [selectedChat, setSelectedChat] = useState<ChatSummaryMessage | null>(initialChatMessages[0]);
+  const [currentChatHistory, setCurrentChatHistory] = useState<ChatMessage[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [error, setError] = useState<boolean>(false);
+  const [helperText, setHelperText] = useState("");
+
+  useEffect(() => {
+    console.log("Chat Component mounted.");
 
     return () => {
-      console.log(`Chat Compoment unmounted. Cleaning up`)
-    }
-  }, 
- [])  
-
-  const handleChatSelect = useCallback( (chat: ChatMessage) => {
-    setSelectedChat(chat);
-    setCurrentChatHistory([
-      { id: 1, text: `${chat.primary}` },
-      ...(chat.secondary ? [{ id: 2, text: chat.secondary }] : []),
-    ]);
+      console.log("Chat Component unmounted. Virtual DOM flusing to DOM. Cleaning up.");
+    };
   }, []);
 
-  const handleSendMessage = useCallback(() => {
-    if (newMessage.trim()) {
-      setCurrentChatHistory((prev) => [...prev, { id: prev.length + 1, text: newMessage }]);
-      setNewMessage('');
+  const handleChatSelect = useCallback(
+    (chat: ChatSummaryMessage) => {
+      setSelectedChat(chat);
+      setCurrentChatHistory([
+        { id: 1, creater: 'user', text: `${chat.primary}` },
+        ...(chat.secondary ? [{ id: 2, creater: 'user' as creater, text: chat.secondary }] : []),
+      ]);
+    },
+    []
+  );
+
+   const handleSendMessage = useCallback(() => {    
+    if (newMessage.trim() === "") {
+      setError(true);
+      setHelperText("Message cannot be empty");
+      return;
     }
-  }, [newMessage]);
+
+    setError(false);
+    setHelperText(""); // Clear any previous error message
+
+    const userMessage = { id: currentChatHistory.length + 1, creater: 'user' as creater, text: newMessage };
+    setCurrentChatHistory((prev) => [...prev, userMessage]);
+    setNewMessage("");
+
+    const request: ChatCompletionRequest = {
+      model: "gpt-4",
+      messages: [
+        ...currentChatHistory.map((msg) => ({
+          role: msg.creater === 'user' ? 'user' : 'assistant' as 'user' | 'assistant',
+          content: msg.text,
+        })),
+        { role: "user", content: newMessage }, // Add the new user input
+      ],
+    };
+
+    // Handle streaming response
+    setIsStreaming(true);
+
+    let accumulatedText = ""; // Accumulate streamed chunks
+    postChatCompletion(
+      request,
+      (chunk) => {
+        accumulatedText += chunk; // Combine chunks
+        setCurrentChatHistory((prev) => {
+          const assistantMessage = prev.find((msg) => msg.creater === 'assistant' && msg.id === prev.length);
+          if (assistantMessage) {
+            // Update the existing assistant message
+            return prev.map((msg) =>
+              msg.id === assistantMessage.id ? { ...msg, text: accumulatedText } : msg
+            );
+          } else {
+            // Add a new assistant message
+            return [...prev, { id: prev.length + 1, creater: 'assistant', text: accumulatedText }];
+          }
+        });
+      },
+      () => {       
+        setError(true);
+        setHelperText("Failed to send message");
+        setIsStreaming(false);
+      },
+      () => {
+        setIsStreaming(false); // End streaming
+      }
+    );
+  }, [newMessage, currentChatHistory]); 
+  
 
   const handleStartNewChat = useCallback(() => {
-    const newChat: ChatMessage = {
+    const newChat: ChatSummaryMessage = {
       id: chatMessages.length + 1,
       primary: `New Chat ${chatMessages.length + 1}`,
-      avatar: '/static/images/avatar/placeholder.jpg',
+      avatar: "/static/images/avatar/placeholder.jpg",
     };
     setChatMessages((prev) => [newChat, ...prev]);
     handleChatSelect(newChat);
@@ -118,7 +186,6 @@ const Chat = () => {
         <Grid item xs={3}>
           <Paper elevation={3} sx={muiStyles.chatListPaper}>
             <Box sx={muiStyles.chatListHeader}>
-                {/* As a ListHEader elemnt */}
               <Typography variant="h6">Chats</Typography>
               <Button variant="contained" size="small" onClick={handleStartNewChat}>
                 Start a Chat
@@ -138,7 +205,7 @@ const Chat = () => {
                     </ListItemAvatar>
                     <ListItemText
                       primary={chat.primary}
-                      secondary={chat.secondary || ''}
+                      secondary={chat.secondary || ""}
                     />
                   </ListItemButton>
                   <Divider />
@@ -154,14 +221,29 @@ const Chat = () => {
             {/* Chat History */}
             <Box sx={muiStyles.chatHistoryBox}>
               {currentChatHistory.map((message) => (
-                <Paper
+                <Box
                   key={message.id}
-                  elevation={1}
-                  sx={muiStyles.chatMessage(message.id % 2 === 0)}
+                  sx={muiStyles.chatMessage(message.creater !== 'user')}
                 >
-                  {message.text}
-                </Paper>
+                  <Typography variant="body2">{message.text}</Typography>
+                </Box>
               ))}
+
+      {/* TODO: 
+      1. Current streaming message - not current working as current message is not set. USe isStremaing? 
+      2. Fix colour of message to go with theme
+      3. Add env with env variables
+      4. Setup AWS infra
+      */}
+        {currentMessage && (
+          <Box sx={muiStyles.chatMessage(false)}>
+            <Typography variant="body2">
+              {currentMessage}
+              {isStreaming && <CircularProgress size={12} sx={{ ml: 1 }} />}
+            </Typography>
+          </Box>
+        )}
+
             </Box>
 
             {/* Message Input */}
@@ -172,11 +254,13 @@ const Chat = () => {
                 placeholder="Type your message..."
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                 sx={muiStyles.textField}
+                error={error}
+                helperText={helperText}
               />
-              <Button variant="contained" onClick={handleSendMessage}>
-                Send
+              <Button variant="contained" onClick={handleSendMessage} disabled={isStreaming}>
+                {isStreaming ? "Streaming..." : "Send"}
               </Button>
             </Box>
           </Paper>
@@ -187,3 +271,4 @@ const Chat = () => {
 };
 
 export default Chat;
+

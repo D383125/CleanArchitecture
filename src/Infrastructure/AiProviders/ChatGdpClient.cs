@@ -16,7 +16,7 @@ namespace Infrastructure.AiProviders
             _client = new OpenAIClient(options.Value.OpenAIKey); //DI
         }
 
-        public async IAsyncEnumerable<string> CompleteChatStreaming(IDictionary<string, string> messages, string model = "gpt-4")
+        public async IAsyncEnumerable<string> CompleteChatStreaming(IEnumerable<KeyValuePair<string, string>> messages, string model = "gpt-4")
         {
             var client = _client.GetChatClient(model);
 
@@ -32,11 +32,16 @@ namespace Infrastructure.AiProviders
                 };
             }).ToList();
 
-            System.ClientModel.AsyncCollectionResult<StreamingChatCompletionUpdate> completionUpdates = client.CompleteChatStreamingAsync(nativeMessages);
+            ChatCompletionOptions options = new()
+            {
+                Temperature = 0
+            };            
+
+            System.ClientModel.AsyncCollectionResult<StreamingChatCompletionUpdate> completionUpdates = client.CompleteChatStreamingAsync(nativeMessages, options);
 
             await foreach (StreamingChatCompletionUpdate completionUpdate in completionUpdates)
             {
-                if (completionUpdate.ContentUpdate.Count > 0)
+                if (completionUpdate.ContentUpdate.Count > 0 && !string.IsNullOrEmpty(completionUpdate.ContentUpdate[0].Text))
                 {
                     yield return completionUpdate.ContentUpdate[0].Text;
                 }

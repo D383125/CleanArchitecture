@@ -1,6 +1,4 @@
 ﻿using Application.Modules;
-using OpenAI.Chat;
-using System.Runtime.InteropServices;
 using WebApp.Contracts;
 
 namespace WebApp.MinimalApiEndpoints
@@ -9,16 +7,19 @@ namespace WebApp.MinimalApiEndpoints
     {
         internal static void MapChatEndpoints(this IEndpointRouteBuilder app)
         {
-
+            //TODO:
+            //1. Add resids cache check
+            //2. Persist chats (add endpoints) With Save button
+            //3. Train Endpoint
             app.MapPost("/chat", async (ChatAssistantModule chatAssistant, ChatCompletionRequest chatRequest, HttpContext context) =>
             {
                 try
                 {
                     context.Response.ContentType = "text/plain";
-                    IDictionary<string, string> nativeMessages = chatRequest.Messages
-                        .Select(m => new KeyValuePair<string, string>(m.Role, m.Content))
-                        .ToDictionary();
-                    await foreach (var chunk in chatAssistant.StreamChatCompletionAsync(nativeMessages, "gpt-4"))
+                    IEnumerable<KeyValuePair<string, string>> nativeMessages = chatRequest.Messages
+                        .Select(m => new KeyValuePair<string, string>(m.Role, m.Content));
+                  
+                    await foreach (var chunk in chatAssistant.StreamChatCompletionAsync(nativeMessages, chatRequest.Model))
                     {
                         await context.Response.WriteAsync(chunk);
                         await context.Response.Body.FlushAsync(); // Ensure chunks are sent immediately

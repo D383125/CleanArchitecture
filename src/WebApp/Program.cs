@@ -34,6 +34,20 @@ builder.Services.AddStackExchangeRedisCache(options =>
 );
 
 
+//Move to Confiruare Services extension
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactClient", policy =>
+    {
+        policy.WithOrigins(allowedOrigins!) // Trusted domain TrustedDomains
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -45,11 +59,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseRouting();
+
+// Apply the CORS middleware before the controllers
+
+app.UseCors("AllowReactClient");
 
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.UseHealthChecks("/health");
 
 //Map Minimal endpoints

@@ -28,3 +28,4 @@
 /src/Domain/bin/Debug/net8.0
 /src/Domain/obj
 /src/node_modules
+/.vs/CleanArch/config/applicationhost.config
