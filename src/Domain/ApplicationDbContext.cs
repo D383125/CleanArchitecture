@@ -1,8 +1,11 @@
 ﻿using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,45 +15,28 @@ namespace Domain
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
-        {
+        {            
+
         }
 
         //TODO: Convert to Postgres snake-case
         public DbSet<Product> Products { get; set; }
 
+        //TODO: Get working. Go simpole ie no index and string and add jsonb etc. Or use dbdown/up
+        public DbSet<Chat> ChatHistory { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
             base.OnModelCreating(modelBuilder);
-
-            // Convert all table names to lowercase
-            //foreach (var entity in modelBuilder.Model.GetEntityTypes())
-            //{
-            //    entity.SetTableName(entity.GetTableName()?.ToLowerInvariant());
-
-            //    // Convert all column names to lowercase
-            //    foreach (var property in entity.GetProperties())
-            //    {
-            //        property.SetColumnName(property.GetColumnName()?.ToLowerInvariant());
-            //    }
-
-            //    // Convert keys and foreign keys to lowercase
-            //    foreach (var key in entity.GetKeys())
-            //    {
-            //        key.SetName(key.GetName()?.ToLowerInvariant());
-            //    }
-
-            //    foreach (var fk in entity.GetForeignKeys())
-            //    {
-            //        fk.SetConstraintName(fk.GetConstraintName()?.ToLowerInvariant());
-            //    }
-
-            //    foreach (var index in entity.GetIndexes())
-            //    {
-            //        index.SetDatabaseName(index.GetDatabaseName()?.ToLowerInvariant());
-            //    }
-            //}
         }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.ConfigureWarnings(warnings =>
+                warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+        }
+
 
     }
 }

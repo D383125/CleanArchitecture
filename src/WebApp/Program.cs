@@ -41,10 +41,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactClient", policy =>
     {
-        policy.WithOrigins(allowedOrigins!) // Trusted domain TrustedDomains
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+        policy.WithOrigins(allowedOrigins!) // Allow specific host
+             .SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost") // Dynamically allow any port for localhost
+             .AllowAnyHeader()
+             .AllowAnyMethod();
     });
 });
 
@@ -55,7 +55,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.ApplyMigrations();
+    //app.ApplyMigrations();
 }
 
 app.UseHttpsRedirection();

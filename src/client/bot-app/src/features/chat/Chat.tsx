@@ -8,6 +8,8 @@ import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import { ChatCompletionRequest } from './types';
 import { postChatCompletion } from './network';
+import { useGetChats } from './hooks';
+import ReactPlaceholder from 'react-placeholder';
 
 interface ChatSummaryMessage {
   id: number;
@@ -17,7 +19,7 @@ interface ChatSummaryMessage {
   avatar: string;
 }
 
-type creater = "user" | "assistant"
+export type creater = "user" | "assistant"
 
 interface ChatMessage {
   id: number
@@ -25,10 +27,11 @@ interface ChatMessage {
   text: string
 }
 
+/*
 const initialChatMessages: ChatSummaryMessage[] = [
   { id: 1, primary: 'Chat 1', secondary: 'Blah blah blah', avatar: '/static/images/avatar/5.jpg' },
   { id: 2, primary: 'Chat 2', secondary: 'Lorem ipsum dolor', avatar: '/static/images/avatar/6.jpg' },
-];
+];*/
 
 const muiStyles = {
   container: {
@@ -83,14 +86,35 @@ const muiStyles = {
 
 
 const Chat = () => {
+  const [chatHistory, loading , ] = useGetChats()        
   const [currentMessage, setCurrentMessage] = useState<string>(''); // For accumulated streamed message
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
-  const [chatMessages, setChatMessages] = useState(initialChatMessages);
-  const [selectedChat, setSelectedChat] = useState<ChatSummaryMessage | null>(initialChatMessages[0]);
+  const [chatMessages, setChatMessages] = useState<ChatSummaryMessage[]>([]);
+  //const [chatMessages, setChatMessages] =  useState(chatHistory);
+  const [selectedChat, setSelectedChat] = useState<ChatSummaryMessage | null>();
   const [currentChatHistory, setCurrentChatHistory] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [error, setError] = useState<boolean>(false);
   const [helperText, setHelperText] = useState("");
+
+useEffect(() => {
+if(!loading && chatHistory !== null)
+{
+  const initialChatMessages: ChatSummaryMessage[] = chatHistory.map((h, i) => {
+    var index = i + 1
+    return {
+      id: index, 
+      primary: `Chat ${index}`,
+      secondary: h.message, 
+      avatar: '/static/images/avatar/5.jpg',
+    }
+  })
+
+  setChatMessages(initialChatMessages)
+}
+}, [chatHistory, loading])
+
+  console.log(`Chat Histry is ${JSON.stringify(chatHistory)}`)  
 
   useEffect(() => {
     console.log("Chat Component mounted.");
@@ -99,6 +123,8 @@ const Chat = () => {
       console.log("Chat Component unmounted. Virtual DOM flusing to DOM. Cleaning up.");
     };
   }, []);
+
+  
 
   const handleChatSelect = useCallback(
     (chat: ChatSummaryMessage) => {
@@ -157,9 +183,8 @@ const Chat = () => {
           }
         });
       },
-      () => {       
-        setError(true);
-        setHelperText("Failed to send message");
+      () => {
+        console.log('Done')        
         setIsStreaming(false);
       },
       () => {
@@ -179,7 +204,10 @@ const Chat = () => {
     handleChatSelect(newChat);
   }, [chatMessages.length, handleChatSelect]);
 
+  
+
   return (
+    <ReactPlaceholder showLoadingAnimation ready={!loading} type="media" rows={2} >
     <Container maxWidth="lg" sx={muiStyles.container}>
       <Grid container spacing={2}>
         {/* Chat List on the left */}
@@ -225,27 +253,24 @@ const Chat = () => {
                   key={message.id}
                   sx={muiStyles.chatMessage(message.creater !== 'user')}
                 >
-                  <Typography variant="body2">{message.text}</Typography>
+                  <Typography variant="body2">                    
+                    {message.text}
+                    </Typography>
                 </Box>
               ))}
 
-      {/* TODO: 
-      1. Current streaming message - not current working as current message is not set. USe isStremaing? 
-      2. Fix colour of message to go with theme
-      3. Add env with env variables
+      {/* TODO:       
+      2. Fix colour of message to go with theme      
       4. Setup AWS infra
       */}
-        {currentMessage && (
+        {isStreaming && (
           <Box sx={muiStyles.chatMessage(false)}>
-            <Typography variant="body2">
-              {currentMessage}
+            <Typography variant="body2">              
               {isStreaming && <CircularProgress size={12} sx={{ ml: 1 }} />}
             </Typography>
           </Box>
         )}
-
             </Box>
-
             {/* Message Input */}
             <Box sx={muiStyles.inputBox}>
               <TextField
@@ -267,6 +292,7 @@ const Chat = () => {
         </Grid>
       </Grid>
     </Container>
+    </ReactPlaceholder>
   );
 };
 

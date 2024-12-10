@@ -29,3 +29,8 @@
 /src/Domain/obj
 /src/node_modules
 /.vs/CleanArch/config/applicationhost.config
+/src/client/bot-app/src/.env
+/src/client/bot-app/src/.env.development
+/src/DataMigration/bin/Debug/net8.0
+/src/DataMigration/obj/Debug/net8.0
+/src/DataMigration/obj

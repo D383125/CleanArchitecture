@@ -25,7 +25,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: botDatabase
+      POSTGRES_DB: SupportBot
     ports:
       - "5432:5432"  
     volumes:

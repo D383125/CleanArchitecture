@@ -1,11 +1,26 @@
 import { ChatCompletionRequest } from "./types";
+import React from 'react';
+import axios from 'axios';
 
-//TODO: Put url in env var
-const url = 'https://localhost:8081/'
+const url = process.env.REACT_APP_API_URL
 const baseUrl = `${url}chat`
   
-  // Stream response handling
-  export const postChatCompletion = async (
+
+export const getChatHistory = ()  => {
+  return axios.get(baseUrl)
+  .then(resp =>         
+    resp.data  
+  )
+  .then(d => 
+{
+  console.log(`Recieved ${JSON.stringify(d)}`)
+  return d
+
+})
+}
+
+
+ export const postChatCompletion = async (
     request: ChatCompletionRequest,
     onUpdateMessage: (updatedText: string) => void,
     onComplete?: () => void,
@@ -45,9 +60,10 @@ const baseUrl = `${url}chat`
       if (onComplete) onComplete(); // Notify when streaming is complete
     } catch (error) {
       if (onError) {
-        console.error(`NETWORK: Error: ${error}`)
-        onError(error instanceof Error ? error.message : 'Unknown error');
+        console.log(`NETWORK: Error: ${error}`)
+        onError(error instanceof Error ? error.message : 'Unknown error');        
       }
+      throw error;
     }
   };
   

@@ -7,10 +7,8 @@ using System.Threading.Tasks;
 namespace Domain.Entities
 {
     
-    public sealed class Product
-    {
-        public int Id { get; set; }
-
+    public sealed class Product : BaseEntity
+    {        
         public required string Name { get; set; }
 
         public decimal Price { get; set; }

@@ -10,12 +10,11 @@ namespace Infrastructure
     {
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
+            var temp = configuration.GetConnectionString("Database");
+
             services.AddDbContext<ApplicationDbContext>(
                 options => options.UseNpgsql(configuration.GetConnectionString("Database"))
-        );
-            //services.AddDbContextCheck<ApplicationDbContext>();
-            //builder.Services.Configure<ApplicationOptions>(builder.Configuration.GetSection("Application"));
-            //services.Configure<ApplicationOptions>((c) => configuration.GetSection("Application"));            
+        );            
 
             return services;
         }

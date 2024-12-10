@@ -1,5 +1,6 @@
 ﻿using Domain.Attributes;
 using Application.Common.Interface;
+using Domain.Entities;
 
 namespace Application.Modules
 {
@@ -24,5 +25,14 @@ namespace Application.Modules
                 }
             }         
         }
+
+        //TODO: Wednesday 1. Connect to db. Use simple accessor (intially) ot move to commandhandler.
+        //2. Publish images to docker reposoitry
+        //3. dontnet, ract arch and sql questiona
+        //public IEnumerable<Chat> GetChatHistory(CancellationToken cancellationToken)
+        //{
+        //    return 
+
+        //}
     }
 }
