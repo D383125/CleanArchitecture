@@ -1,15 +1,18 @@
 ﻿using Domain.Attributes;
 using Application.Common.Interface;
 using Domain.Entities;
+using Application.Interfaces;
 
 namespace Application.Modules
 {
     [DI]
     public sealed class ChatAssistantModule
     {
+        private readonly IGenericRepository<Chat> _repository;
         private readonly IChatClient _chatClient;
-        public ChatAssistantModule(IChatClient chatClient)
+        public ChatAssistantModule(IGenericRepository<Chat> repository, IChatClient chatClient)
         {
+            _repository = repository;
             _chatClient = chatClient;
         }
 
@@ -26,13 +29,14 @@ namespace Application.Modules
             }         
         }
 
-        //TODO: Wednesday 1. Connect to db. Use simple accessor (intially) ot move to commandhandler.
+        //TODO: 
         //2. Publish images to docker reposoitry
         //3. dontnet, ract arch and sql questiona
-        //public IEnumerable<Chat> GetChatHistory(CancellationToken cancellationToken)
-        //{
-        //    return 
+        public async Task<IEnumerable<Chat>> GetChatHistory(CancellationToken cancellationToken)
+        {            
+            var conversations = await _repository.GetAll();
 
-        //}
+            return conversations;
+        }
     }
 }

@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities
+namespace Domain.Interfaces
 {
-    abstract public class BaseEntity
+    public interface IAggregateRoot
     {
-        public virtual int Id { get; protected set; }       
+
     }
 }

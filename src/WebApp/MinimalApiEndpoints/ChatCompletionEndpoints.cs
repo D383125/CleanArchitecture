@@ -49,22 +49,25 @@ namespace WebApp.MinimalApiEndpoints
             {
             var chatHistory = await cache.GetAsync("allChatHistory", 
                 async token =>
-                    {                        
-                        return await Task.FromResult(new List<Chat>()
-                        {                           
-                            new() 
-                            {
-                                CreatedOn = DateTime.UtcNow,
-                                LastModifiedOn = DateTime.UtcNow,
-                                Message = "Lorem ipsum dolor"
-                            },
-                            new()
-                            {
-                                CreatedOn = DateTime.UtcNow,
-                                LastModifiedOn = DateTime.UtcNow,
-                                Message = "Lorem ipsum dolor II"
-                            }
-                        });
+                    {
+                        //ValueTask.FromResult
+                        //return await Task.FromResult(new List<Chat>()
+                        //{                           
+                        //    new() 
+                        //    {
+                        //        CreatedOn = DateTime.UtcNow,
+                        //        LastModifiedOn = DateTime.UtcNow,
+                        //        Message = "Lorem ipsum dolor"
+                        //    },
+                        //    new()
+                        //    {
+                        //        CreatedOn = DateTime.UtcNow,
+                        //        LastModifiedOn = DateTime.UtcNow,
+                        //        Message = "Lorem ipsum dolor II"
+                        //    }
+                        //});
+                        return await chatAssistant.GetChatHistory(ct);
+
                     },
                     CacheOptions.DefaultExpiration,
                     ct);

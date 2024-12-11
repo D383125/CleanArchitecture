@@ -1,4 +1,5 @@
-﻿using Domain;
+﻿using Application.Interfaces;
+using Domain;
 using Infrastructure.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -13,8 +14,13 @@ namespace Infrastructure
             var temp = configuration.GetConnectionString("Database");
 
             services.AddDbContext<ApplicationDbContext>(
-                options => options.UseNpgsql(configuration.GetConnectionString("Database"))
-        );            
+                options =>                
+                    options
+                    .UseNpgsql(configuration.GetConnectionString("Database"))
+                    .UseLowerCaseNamingConvention()                
+            );
+
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
             return services;
         }

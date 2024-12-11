@@ -1,5 +1,4 @@
 using Application.Modules;
-using Domain.Extensions;
 using Infrastructure;
 using Infrastructure.AiProviders;
 using Infrastructure.Configuration;

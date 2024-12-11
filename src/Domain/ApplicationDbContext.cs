@@ -27,15 +27,17 @@ namespace Domain
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            //modelBuilder.UseSnakeCaseNamingConvention();
+
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
             base.OnModelCreating(modelBuilder);
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.ConfigureWarnings(warnings =>
-                warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
-        }
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+        //    optionsBuilder.ConfigureWarnings(warnings =>
+        //        warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+        //}
 
 
     }
