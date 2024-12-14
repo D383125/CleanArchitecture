@@ -31,6 +31,10 @@ jobs:
     - name: Build the application
       run: dotnet build src/WebApp/WebApp.csproj --configuration Release --no-restore
 
+    # Step 5: Test
+    - name: Test the application
+      run: dotnet test tests/Application.UnitTests/Application.UnitTests.csproj
+
     # Step 5: Publish the .NET application
     - name: Publish the application
       run: dotnet publish src/WebApp/WebApp.csproj --configuration Release --output publish
@@ -42,7 +46,7 @@ jobs:
     - name: Build nginx Docker image
       run: docker build . -f src/client/nginx.conf -t my-nginx:latest
 
-    # Step 7: Tag imnages
+    # Step 7: Tag images
     - name: Tag WebApp image
       run: docker tag webapp:dev breen25/aibot:dev
     
