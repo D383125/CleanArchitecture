@@ -1,11 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Domain.Entities;
+using Domain.Interfaces;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Application.Interfaces
 {
@@ -15,12 +10,12 @@ namespace Application.Interfaces
         //Encapsulates query logic.
         //Simplifies unit testing.
         //Supports dynamic composition of queries.
-    public interface IGenericRepository<T>
+    public interface IGenericRepository<T> where T : BaseEntity, IAggregateRoot
     {
         IEnumerable<T> Specify(ISpecification<T> spec);                
         IEnumerable<T> SpecifyWithPagination(ISpecification<T> spec, int pageSize = 10, int pageIndex = 0);        
         Task<T> AddAsync(T entity);        
-        Task<T[]> AddRangeAsync(T[] entity);        
+        Task<T[]> AddRangeAsync(T[] entity);
         Task DeleteAsync(T entity);        
         Task<T> Get(Expression<Func<T, bool>> predicate);        
         Task<IReadOnlyList<T>> GetAll();        

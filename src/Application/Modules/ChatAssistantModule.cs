@@ -31,7 +31,7 @@ namespace Application.Modules
 
         //TODO: 
         //2. Publish images to docker reposoitry
-        //3. dontnet, ract arch and sql questiona
+        //3. dontnet, ract arch and sql questions
         public async Task<IEnumerable<Chat>> GetChatHistory(CancellationToken cancellationToken)
         {            
             var conversations = await _repository.GetAll();

@@ -1,6 +1,7 @@
 ﻿using Domain.Entities;
 using Domain;
 using WebApp.Contracts;
+using Infrastructure;
 
 namespace WebApp.MinimalApiEndpoints
 {

@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Extensions.Caching.Distributed;
+﻿using Microsoft.Extensions.Caching.Distributed;
+
+namespace Microsoft.Extensions.Caching.Distributed;
 
 public static class CacheOptions
 {

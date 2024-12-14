@@ -1,5 +1,6 @@
 ﻿using Domain;
 using Domain.Entities;
+using Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using WebApp.Contracts;

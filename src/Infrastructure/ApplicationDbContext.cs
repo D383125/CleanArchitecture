@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain
+namespace Infrastructure
 {
     public class ApplicationDbContext : DbContext
     {
