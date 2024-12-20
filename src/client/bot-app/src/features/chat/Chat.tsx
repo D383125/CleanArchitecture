@@ -6,32 +6,14 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
-import { ChatCompletionRequest } from './types';
-import { postChatCompletion } from './network';
-import { useGetChats } from './hooks';
+import { ChatCompletionRequest, ChatMessage, ChatSummary, creater } from './types';
+import { streamChatCompletion } from './network';
+import { useGetChats, useSaveChat } from './hooks';
 import ReactPlaceholder from 'react-placeholder';
+import { useForm, Controller } from "react-hook-form";
 
-interface ChatSummaryMessage {
-  id: number;
-  creater?: string;
-  primary: string;
-  secondary?: string;
-  avatar: string;
-}
 
-export type creater = "user" | "assistant"
 
-interface ChatMessage {
-  id: number
-  creater: creater
-  text: string
-}
-
-/*
-const initialChatMessages: ChatSummaryMessage[] = [
-  { id: 1, primary: 'Chat 1', secondary: 'Blah blah blah', avatar: '/static/images/avatar/5.jpg' },
-  { id: 2, primary: 'Chat 2', secondary: 'Lorem ipsum dolor', avatar: '/static/images/avatar/6.jpg' },
-];*/
 
 const muiStyles = {
   container: {
@@ -60,21 +42,21 @@ const muiStyles = {
     flex: 1,
     p: 2,
     overflowY: 'auto',
-    display: 'flex', // Add flex layout
-    flexDirection: 'column', // Stack messages vertically
-    gap: 1, // Optional spacing between messages
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 1,
   },
   chatMessage: (isUser: boolean) => ({
     p: 1,
     mb: 1,
     borderRadius: 2,
     maxWidth: '70%',
-    alignSelf: isUser ? 'flex-end' : 'flex-start', // Align based on the sender
+    alignSelf: isUser ? 'flex-end' : 'flex-start',
     backgroundColor: isUser ? 'primary.light' : 'grey.200',
   }),
   inputBox: {
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'stretch', // Ensure child elements stretch to the full height
     p: 2,
     borderTop: 1,
     borderColor: 'divider',
@@ -82,72 +64,106 @@ const muiStyles = {
   textField: {
     mr: 2,
   },
+  button: {
+    height: '100%', // Match the button height to the TextField
+  },
 };
 
 
+
 const Chat = () => {
-  const [chatHistory, loading , ] = useGetChats()        
-  const [currentMessage, setCurrentMessage] = useState<string>(''); // For accumulated streamed message
+  const [chatConversations, loading , ] = useGetChats() 
+  const { saveChats, loading: saveLoading, error: saveError } = useSaveChat();
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
-  const [chatMessages, setChatMessages] = useState<ChatSummaryMessage[]>([]);
-  //const [chatMessages, setChatMessages] =  useState(chatHistory);
-  const [selectedChat, setSelectedChat] = useState<ChatSummaryMessage | null>();
+  const [chatSummaries, setChatSummaries] = useState<ChatSummary[]>([]);
+  const [selectedChatSummary, setSelectedChatSummary] = useState<ChatSummary | null>();
   const [currentChatHistory, setCurrentChatHistory] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
-  const [error, setError] = useState<boolean>(false);
+  const [sendError, setSendError] = useState<boolean>(false);
   const [helperText, setHelperText] = useState("");
+  const { register, handleSubmit, reset, formState: { errors }, } = useForm<ChatMessage[]>();
+  const [isDirty, setIsDirty] = useState<Boolean>(false)
 
-useEffect(() => {
-if(!loading && chatHistory !== null)
-{
-  const initialChatMessages: ChatSummaryMessage[] = chatHistory.map((h, i) => {
-    var index = i + 1
-    return {
-      id: index, 
-      primary: `Chat ${index}`,
-      secondary: h.message, 
-      avatar: '/static/images/avatar/5.jpg',
+  
+  useEffect(() =>
+    console.log(`IS Form dirty ${isDirty}`)
+    , [isDirty])
+
+
+  const onSubmit = async () => {
+    console.log(`Submitting ${JSON.stringify(currentChatHistory)}`)
+    if (!currentChatHistory.length) {
+      alert('No messages to save.');
+      return;
     }
-  })
 
-  setChatMessages(initialChatMessages)
-}
-}, [chatHistory, loading])
-
-  console.log(`Chat Histry is ${JSON.stringify(chatHistory)}`)  
+    try {
+      await saveChats(currentChatHistory);
+      reset(); // Clear the form after successful submission
+      setIsDirty(false)
+      alert('Chat saved!');
+    } catch (err) {
+      console.error('Failed to save chat:', err);
+    }
+  };
 
   useEffect(() => {
-    console.log("Chat Component mounted.");
+    //TODO: This needs to be set as the intial state in the form
+    if(!loading && chatConversations !== null)
+    {
+      const chatSummaries: ChatSummary[] = chatConversations.map((h, i) => {
+        var index = i + 1
+        return {
+          id: index, 
+          primary: `Chat ${index}`,
+          secondary: h.message, 
+          avatar: '/static/images/avatar/5.jpg',
+        }
+      })
 
-    return () => {
-      console.log("Chat Component unmounted. Virtual DOM flusing to DOM. Cleaning up.");
-    };
-  }, []);
+    setChatSummaries(chatSummaries)
 
+    console.log(`chatConversations = ${JSON.stringify(chatConversations)}`)
+    const initialChatConversations: ChatMessage[] = chatConversations.map( (m, i) => 
+    {
+      var index = i + 1
+      return {
+        id: index,
+        role: m.createrId === 1 ? 'user' : 'assistant',
+        content: m.message
+      }
+    }
+    )  
+    console.log(`initialChatConversations = ${JSON.stringify(initialChatConversations)}`)
+    //setCurrentChatHistory(initialChatConversations)
+    reset(initialChatConversations)
+  }
+  }, [chatConversations, loading, reset])
   
 
   const handleChatSelect = useCallback(
-    (chat: ChatSummaryMessage) => {
-      setSelectedChat(chat);
+    (chat: ChatSummary) => {
+      setSelectedChatSummary(chat);
       setCurrentChatHistory([
-        { id: 1, creater: 'user', text: `${chat.primary}` },
-        ...(chat.secondary ? [{ id: 2, creater: 'user' as creater, text: chat.secondary }] : []),
+        { id: 1, role: 'user', content: `${chat.primary}` },
+        ...(chat.secondary ? [{ id: 2, role: 'user' as creater, content: chat.secondary }] : []),
       ]);
     },
     []
   );
-
+  
    const handleSendMessage = useCallback(() => {    
     if (newMessage.trim() === "") {
-      setError(true);
+      setSendError(true);
       setHelperText("Message cannot be empty");
       return;
     }
 
-    setError(false);
+    setIsDirty(true)
+    setSendError(false);
     setHelperText(""); // Clear any previous error message
 
-    const userMessage = { id: currentChatHistory.length + 1, creater: 'user' as creater, text: newMessage };
+    const userMessage = { id: currentChatHistory.length + 1, role: 'user' as creater, content: newMessage };
     setCurrentChatHistory((prev) => [...prev, userMessage]);
     setNewMessage("");
 
@@ -155,8 +171,8 @@ if(!loading && chatHistory !== null)
       model: "gpt-4",
       messages: [
         ...currentChatHistory.map((msg) => ({
-          role: msg.creater === 'user' ? 'user' : 'assistant' as 'user' | 'assistant',
-          content: msg.text,
+          role: msg.role === 'user' ? 'user' : 'assistant' as 'user' | 'assistant',
+          content: msg.content,
         })),
         { role: "user", content: newMessage }, // Add the new user input
       ],
@@ -166,20 +182,20 @@ if(!loading && chatHistory !== null)
     setIsStreaming(true);
 
     let accumulatedText = ""; // Accumulate streamed chunks
-    postChatCompletion(
+    streamChatCompletion(
       request,
       (chunk) => {
         accumulatedText += chunk; // Combine chunks
         setCurrentChatHistory((prev) => {
-          const assistantMessage = prev.find((msg) => msg.creater === 'assistant' && msg.id === prev.length);
+          const assistantMessage = prev.find((msg) => msg.role === 'assistant' && msg.id === prev.length);
           if (assistantMessage) {
             // Update the existing assistant message
             return prev.map((msg) =>
-              msg.id === assistantMessage.id ? { ...msg, text: accumulatedText } : msg
+              msg.id === assistantMessage.id ? { ...msg, content: accumulatedText } : msg
             );
           } else {
             // Add a new assistant message
-            return [...prev, { id: prev.length + 1, creater: 'assistant', text: accumulatedText }];
+            return [...prev, { id: prev.length + 1, role: 'assistant', content: accumulatedText }];
           }
         });
       },
@@ -193,108 +209,121 @@ if(!loading && chatHistory !== null)
     );
   }, [newMessage, currentChatHistory]); 
   
-
   const handleStartNewChat = useCallback(() => {
-    const newChat: ChatSummaryMessage = {
-      id: chatMessages.length + 1,
-      primary: `New Chat ${chatMessages.length + 1}`,
+    const newChat: ChatSummary = {
+      id: chatSummaries.length + 1,
+      primary: `New Chat ${chatSummaries.length + 1}`,
       avatar: "/static/images/avatar/placeholder.jpg",
     };
-    setChatMessages((prev) => [newChat, ...prev]);
+    setChatSummaries((prev) => [newChat, ...prev]);
     handleChatSelect(newChat);
-  }, [chatMessages.length, handleChatSelect]);
+  }, [chatSummaries.length, handleChatSelect]);
 
-  
 
   return (
+    <form onSubmit={handleSubmit(onSubmit)}>
     <ReactPlaceholder showLoadingAnimation ready={!loading} type="media" rows={2} >
-    <Container maxWidth="lg" sx={muiStyles.container}>
-      <Grid container spacing={2}>
-        {/* Chat List on the left */}
-        <Grid item xs={3}>
-          <Paper elevation={3} sx={muiStyles.chatListPaper}>
-            <Box sx={muiStyles.chatListHeader}>
-              <Typography variant="h6">Chats</Typography>
-              <Button variant="contained" size="small" onClick={handleStartNewChat}>
-                Start a Chat
-              </Button>
-            </Box>
-            <Divider />
-            <List>
-              {chatMessages.map((chat) => (
-                <React.Fragment key={chat.id}>
-                  <ListItemButton
-                    onClick={() => handleChatSelect(chat)}
-                    selected={selectedChat?.id === chat.id}
-                    sx={muiStyles.listItemButton(selectedChat?.id === chat.id)}
+      <Container maxWidth="lg" sx={muiStyles.container}>
+        <Grid container spacing={2}>
+          {/* Chat List on the left */}
+          <Grid item xs={3}>
+            <Paper elevation={3} sx={muiStyles.chatListPaper}>
+              <Box sx={muiStyles.chatListHeader}>
+                <Typography variant="h6">Chats</Typography>
+                <Button variant="contained" size="small" onClick={handleStartNewChat}>
+                  Start a Chat
+                </Button>
+              </Box>
+              <Divider />
+              <List>
+                {chatSummaries.map((chat) => (
+                  <React.Fragment key={chat.id}>
+                    <ListItemButton
+                      onClick={() => handleChatSelect(chat)}
+                      selected={selectedChatSummary?.id === chat.id}
+                      sx={muiStyles.listItemButton(selectedChatSummary?.id === chat.id)}
+                    >
+                      <ListItemAvatar>
+                        <Avatar src={chat.avatar} />
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={chat.primary}
+                        secondary={chat.secondary || ""}
+                      />
+                    </ListItemButton>
+                    <Divider />
+                  </React.Fragment>
+                ))}
+              </List>
+            </Paper>
+          </Grid>
+
+          {/* Current Chat on the right */}
+          <Grid item xs={9}>
+            <Paper elevation={3} sx={muiStyles.currentChatPaper}>
+              {/* Chat History */}
+              <Box sx={muiStyles.chatHistoryBox}>
+                {currentChatHistory.map((message) => (
+                  <Box
+                    key={message.id}
+                    sx={muiStyles.chatMessage(message.role !== 'user')}
                   >
-                    <ListItemAvatar>
-                      <Avatar src={chat.avatar} />
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={chat.primary}
-                      secondary={chat.secondary || ""}
-                    />
-                  </ListItemButton>
-                  <Divider />
-                </React.Fragment>
-              ))}
-            </List>
-          </Paper>
-        </Grid>
+                    <Typography variant="body2">                    
+                      {message.content}
+                      </Typography>
+                  </Box>
+                ))}
 
-        {/* Current Chat on the right */}
-        <Grid item xs={9}>
-          <Paper elevation={3} sx={muiStyles.currentChatPaper}>
-            {/* Chat History */}
-            <Box sx={muiStyles.chatHistoryBox}>
-              {currentChatHistory.map((message) => (
-                <Box
-                  key={message.id}
-                  sx={muiStyles.chatMessage(message.creater !== 'user')}
-                >
-                  <Typography variant="body2">                    
-                    {message.text}
-                    </Typography>
-                </Box>
-              ))}
-
-      {/* TODO:       
-      2. Fix colour of message to go with theme      
-      4. Setup AWS infra
-      */}
-        {isStreaming && (
-          <Box sx={muiStyles.chatMessage(false)}>
-            <Typography variant="body2">              
-              {isStreaming && <CircularProgress size={12} sx={{ ml: 1 }} />}
-            </Typography>
-          </Box>
-        )}
+        {/* TODO:       
+        2. Fix colour of message to go with theme      
+        */}
+          {isStreaming && (
+            <Box sx={muiStyles.chatMessage(false)}>
+              <Typography variant="body2">              
+                {isStreaming && <CircularProgress size={12} sx={{ ml: 1 }} />}
+              </Typography>
             </Box>
-            {/* Message Input */}
-            <Box sx={muiStyles.inputBox}>
-              <TextField
-                fullWidth
-                variant="outlined"
-                placeholder="Type your message..."
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                sx={muiStyles.textField}
-                error={error}
-                helperText={helperText}
-              />
-              <Button variant="contained" onClick={handleSendMessage} disabled={isStreaming}>
-                {isStreaming ? "Streaming..." : "Send"}
-              </Button>
-            </Box>
-          </Paper>
+          )}
+              </Box>
+              {/* Message Input */}
+              <Box sx={muiStyles.inputBox}>
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  placeholder="Type your message..."
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => 
+                  {
+                    if(e.key === "Enter"){
+                      e.preventDefault()    
+                      handleSendMessage()
+                    }    
+                  }
+                  }
+                  sx={muiStyles.textField}
+                  error={sendError}
+                  helperText={helperText}
+                />
+                 <Box sx={{ display: 'flex', gap: 1}}>
+                <Button variant="contained" onClick={handleSendMessage} disabled={isStreaming}
+                   sx={muiStyles.button}>
+                  {isStreaming ? "Streaming..." : "Send"}
+                </Button>
+                <Button variant='contained' sx={muiStyles.button} disabled={!isDirty} type='submit'>
+                  Save
+                </Button>
+                </Box>                
+              </Box>
+            </Paper>
+          </Grid>
         </Grid>
-      </Grid>
-    </Container>
+      </Container>
     </ReactPlaceholder>
+    </form>
   );
 };
+
 
 export default Chat;
 

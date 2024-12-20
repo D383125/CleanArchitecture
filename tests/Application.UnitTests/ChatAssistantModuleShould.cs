@@ -16,14 +16,21 @@ namespace Application.UnitTests
             var repositoryMock = new Mock<IGenericRepository<Chat>>(); // Configure
             var sut = new ChatAssistantModule(repositoryMock.Object, mockChatClient);
 
-            List<string> results = new();
-            await foreach(var chunk in sut.StreamChatCompletionAsync(new Dictionary<string, string>(), string.Empty))
+            List<string> results = [];
+            await foreach(var chunk in sut.StreamChatCompletionAsync([], string.Empty))
             {
                 results.Add(chunk);
             }
 
             Assert.Equal(new[] { "Hello", "How are you?" }, results);  
-        }        
+        }
+
+        [Fact]
+        public void UpdateNewAndAmendedChatConversationsSucessfully()
+        {
+
+        }
+
     }    
 }
 

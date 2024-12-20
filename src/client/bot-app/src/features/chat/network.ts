@@ -1,4 +1,4 @@
-import { ChatCompletionRequest } from "./types";
+import { ChatCompletionRequest, ChatMessage } from "./types";
 import React from 'react';
 import axios from 'axios';
 
@@ -15,12 +15,17 @@ export const getChatHistory = ()  => {
 {
   console.log(`Recieved ${JSON.stringify(d)}`)
   return d
-
 })
 }
 
+export const saveChat = async (
+  request: ChatMessage[]
+) => {
+return await axios.put(baseUrl, request)
+  .then(response => response.data)
+}
 
- export const postChatCompletion = async (
+ export const streamChatCompletion = async (
     request: ChatCompletionRequest,
     onUpdateMessage: (updatedText: string) => void,
     onComplete?: () => void,

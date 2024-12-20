@@ -20,6 +20,7 @@ namespace Application.Interfaces
         Task<T> Get(Expression<Func<T, bool>> predicate);        
         Task<IReadOnlyList<T>> GetAll();        
         Task<T> GetByIdAsync(int Id);        
-        Task UpdateAsync(T entity);        
+        Task UpdateAsync(T entity);
+        Task UpdateRangeAsync(T[] entity);
     }
 }

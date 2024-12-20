@@ -2,6 +2,7 @@
 using Application.Common.Interface;
 using Domain.Entities;
 using Application.Interfaces;
+using OpenAI.Chat;
 
 namespace Application.Modules
 {
@@ -29,14 +30,18 @@ namespace Application.Modules
             }         
         }
 
-        //TODO: 
-        //2. Publish images to docker reposoitry
-        //3. dontnet, ract arch and sql questions
-        public async Task<IEnumerable<Chat>> GetChatHistory(CancellationToken cancellationToken)
+        public async Task<IEnumerable<Chat>> GetChatHistoryAsync(CancellationToken cancellationToken)
         {            
             var conversations = await _repository.GetAll();
 
             return conversations;
+        }
+
+        public async void SaveChatHistoriesAsync(IEnumerable<ChatMessage> chatMessages, CancellationToken cancellationToken)
+        {
+            //TODO: Map WebApp contracts to domain object. It needs to be written in  as json
+           // _repository.UpdateRangeAsync(chatMessages.ToArray());
+
         }
     }
 }

@@ -11,4 +11,14 @@
         public string Role { get; set; } // Values: "system", "user", "assistant"
         public string Content { get; set; }
     }
+
+    public class ChatMessage : ChatCompletionMessage
+    {
+        public int Id { get; set; }
+    }
+
+    public class ChatHistory
+    {
+        public ChatMessage[] Messages { get; set; } = [];
+    }
 }

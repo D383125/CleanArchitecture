@@ -79,6 +79,11 @@ namespace Infrastructure
             _context.Entry(entity).State = EntityState.Modified;
             return Task.CompletedTask;
         }
-    }
 
+        public Task UpdateRangeAsync(T[] entity)
+        {
+            Array.ForEach(entity, e => _context.Entry(e).State = EntityState.Modified);
+            return Task.CompletedTask;
+        }
+    }
 }

@@ -12,9 +12,16 @@ namespace WebApp.MinimalApiEndpoints
         internal static void MapChatEndpoints(this IEndpointRouteBuilder app)
         {
             //TODO:
-            //1. Add resids cache check
             //2. Persist chats (add endpoints) With Save button
             //3. Train Endpoint
+            app.MapPut("/chat", async (ChatAssistantModule chatAssistant, ChatMessage[] chatRequest) => {
+                return ValueTask.FromResult("Not Impleiment"); 
+            })
+            .WithName("SaveChats")
+            .WithTags("Chat bot")
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest);
+
             app.MapPost("/chat", async (ChatAssistantModule chatAssistant, ChatCompletionRequest chatRequest, HttpContext context) =>
             {
                 try
@@ -40,7 +47,6 @@ namespace WebApp.MinimalApiEndpoints
             .Produces<string>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest);
 
-
             app.MapGet("/chat", async (
                 ChatAssistantModule chatAssistant, 
                 IDistributedCache cache, 
@@ -48,27 +54,7 @@ namespace WebApp.MinimalApiEndpoints
                 CancellationToken ct) =>
             {
             var chatHistory = await cache.GetAsync("allChatHistory", 
-                async token =>
-                    {
-                        //ValueTask.FromResult
-                        //return await Task.FromResult(new List<Chat>()
-                        //{                           
-                        //    new() 
-                        //    {
-                        //        CreatedOn = DateTime.UtcNow,
-                        //        LastModifiedOn = DateTime.UtcNow,
-                        //        Message = "Lorem ipsum dolor"
-                        //    },
-                        //    new()
-                        //    {
-                        //        CreatedOn = DateTime.UtcNow,
-                        //        LastModifiedOn = DateTime.UtcNow,
-                        //        Message = "Lorem ipsum dolor II"
-                        //    }
-                        //});
-                        return await chatAssistant.GetChatHistory(ct);
-
-                    },
+                async token => await chatAssistant.GetChatHistoryAsync(ct),
                     CacheOptions.DefaultExpiration,
                     ct);
 
