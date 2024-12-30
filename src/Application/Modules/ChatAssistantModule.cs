@@ -37,11 +37,11 @@ namespace Application.Modules
             return conversations;
         }
 
-        public async void SaveChatHistoriesAsync(IEnumerable<ChatMessage> chatMessages, CancellationToken cancellationToken)
+        public async Task SaveChatHistoriesAsync(IEnumerable<Chat> chatMessages, CancellationToken cancellationToken)
         {
             //TODO: Map WebApp contracts to domain object. It needs to be written in  as json
            // _repository.UpdateRangeAsync(chatMessages.ToArray());
-
+           return await Task.CompletedTask;
         }
     }
 }

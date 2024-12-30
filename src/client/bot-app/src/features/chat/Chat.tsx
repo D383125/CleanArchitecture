@@ -108,7 +108,6 @@ const Chat = () => {
   };
 
   useEffect(() => {
-    //TODO: This needs to be set as the intial state in the form
     if(!loading && chatConversations !== null)
     {
       const chatSummaries: ChatSummary[] = chatConversations.map((h, i) => {
@@ -122,8 +121,6 @@ const Chat = () => {
       })
 
     setChatSummaries(chatSummaries)
-
-    console.log(`chatConversations = ${JSON.stringify(chatConversations)}`)
     const initialChatConversations: ChatMessage[] = chatConversations.map( (m, i) => 
     {
       var index = i + 1
@@ -132,10 +129,8 @@ const Chat = () => {
         role: m.createrId === 1 ? 'user' : 'assistant',
         content: m.message
       }
-    }
-    )  
-    console.log(`initialChatConversations = ${JSON.stringify(initialChatConversations)}`)
-    //setCurrentChatHistory(initialChatConversations)
+    })
+    //Set intial form state  
     reset(initialChatConversations)
   }
   }, [chatConversations, loading, reset])
@@ -220,9 +215,42 @@ const Chat = () => {
   }, [chatSummaries.length, handleChatSelect]);
 
 
+  const customPlaceHolder = (
+    <>
+    <Grid container spacing={2}>
+      {/* Chat List Placeholder */}
+      <Grid item xs={3}>
+        <Box
+          sx={{
+            height: 'calc(100vh - 100px)',
+            backgroundColor: 'grey.200',
+            borderRadius: 1,
+          }}
+        ></Box>
+      </Grid>
+
+      {/* Current Chat Placeholder */}
+      <Grid item xs={9}>
+        <Box
+          sx={{
+            height: 'calc(100vh - 100px)',
+            backgroundColor: 'grey.300',
+            borderRadius: 1,
+          }}
+        ></Box>
+      </Grid>
+    </Grid>
+    </>
+  )
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-    <ReactPlaceholder showLoadingAnimation ready={!loading} type="media" rows={2} >
+    <form onSubmit={handleSubmit(onSubmit)}
+    style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}
+    >
+    <ReactPlaceholder
+      showLoadingAnimation
+      ready={!loading}
+      customPlaceholder={customPlaceHolder}>
       <Container maxWidth="lg" sx={muiStyles.container}>
         <Grid container spacing={2}>
           {/* Chat List on the left */}
@@ -236,25 +264,28 @@ const Chat = () => {
               </Box>
               <Divider />
               <List>
-                {chatSummaries.map((chat) => (
-                  <React.Fragment key={chat.id}>
-                    <ListItemButton
-                      onClick={() => handleChatSelect(chat)}
-                      selected={selectedChatSummary?.id === chat.id}
-                      sx={muiStyles.listItemButton(selectedChatSummary?.id === chat.id)}
-                    >
-                      <ListItemAvatar>
-                        <Avatar src={chat.avatar} />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={chat.primary}
-                        secondary={chat.secondary || ""}
-                      />
-                    </ListItemButton>
-                    <Divider />
-                  </React.Fragment>
-                ))}
-              </List>
+          {chatSummaries.length > 0 ? (
+            chatSummaries.map((chat) => (
+              <React.Fragment key={chat.id}>
+                <ListItemButton
+                  onClick={() => handleChatSelect(chat)}
+                  selected={selectedChatSummary?.id === chat.id}
+                  sx={muiStyles.listItemButton(selectedChatSummary?.id === chat.id)}
+                >
+                  <ListItemAvatar>
+                    <Avatar src={chat.avatar} />
+                  </ListItemAvatar>
+                  <ListItemText primary={chat.primary} secondary={chat.secondary || ""} />
+                </ListItemButton>
+                <Divider />
+              </React.Fragment>
+            ))
+          ) : (
+            <Typography variant="body2" sx={{ textAlign: 'center', p: 2 }}>
+              No chats available.
+            </Typography>
+          )}
+        </List>
             </Paper>
           </Grid>
 

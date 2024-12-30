@@ -14,8 +14,16 @@ namespace WebApp.MinimalApiEndpoints
             //TODO:
             //2. Persist chats (add endpoints) With Save button
             //3. Train Endpoint
-            app.MapPut("/chat", async (ChatAssistantModule chatAssistant, ChatMessage[] chatRequest) => {
-                return ValueTask.FromResult("Not Impleiment"); 
+            app.MapPut("/chat", async (ChatAssistantModule chatAssistant, ChatMessage[] chatRequest, CancellationToken ct) => {
+
+                var chatMessages = chatRequest.Select(m => new Chat
+                {
+                    Message = m.Content,
+                    LastModifiedOn = DateTimeOffset.UtcNow,
+                });
+
+                await chatAssistant.SaveChatHistoriesAsync(chatMessages, ct);
+                 
             })
             .WithName("SaveChats")
             .WithTags("Chat bot")
