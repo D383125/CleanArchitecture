@@ -1,9 +1,8 @@
-import { ChatRequest, ChatMessage, Chat, chatDto, creater } from "./types";
+import { ChatRequest, ChatMessage, Chat, chatDto, ChatDto } from "./types";
 import axios from 'axios';
 
 const url = process.env.REACT_APP_API_URL
 const baseUrl = `${url}chat`
-  
 
 export const getChatHistory = async (): Promise<Chat[]> => {
   try {
@@ -13,10 +12,10 @@ export const getChatHistory = async (): Promise<Chat[]> => {
     console.log(`Received raw data: ${JSON.stringify(rawData)}`);
 
     const chats: Chat[] = rawData.map((dto: any) => {
-      const parsedDto = chatDto.parse(dto); // Validate using Zod
-
-      // Double parse the `message` field to handle the double-encoded JSON
-      const messages: ChatMessage[] = JSON.parse(JSON.parse(parsedDto.message)).map((msg: any) => ({
+      const parsedDto = chatDto.parse(dto); // Validate using Zod      
+      const messageArray = JSON.parse(parsedDto.message); 
+      
+      const messages: ChatMessage[] = messageArray.map((msg: any) => ({
         id: msg.id,
         role: msg.role as ChatMessage['role'], // Ensure type safety
         content: msg.content,
@@ -24,9 +23,9 @@ export const getChatHistory = async (): Promise<Chat[]> => {
 
       return {
         id: parsedDto.id,
-        creatorId: parsedDto.creatorId ?? -1, // Fallback if null
+        creatorId: parsedDto.creatorId ?? -1,
         createdOn: parsedDto.createdOn?.toISOString() || "",
-        modifedOn: parsedDto.lastModifiedOn?.toISOString() || "",
+        modifiedOn: parsedDto.lastModifiedOn?.toISOString() || "",
         messages,
       };
     });
@@ -39,57 +38,9 @@ export const getChatHistory = async (): Promise<Chat[]> => {
 };
 
 
-/* export const getChatHistory = async (): Promise<Chat[]> => {
-  try {
-    const response = await axios.get(baseUrl);
-    const rawData = response.data;
-
-    console.log(`Received raw data: ${JSON.stringify(rawData)}`);
-
-    const chats: Chat[] = rawData.map((dto: any) => {
-      const parsedDto = chatDto.parse(dto); // Validate using Zod
-
-      // Double parse the `message` field to handle the double-encoded JSON
-      const messages: ChatMessage[] = JSON.parse(JSON.parse(parsedDto.message)).map((msg: any) => ({
-        id: msg.id,
-        role: msg.role as creater, // Ensure type safety
-        content: msg.content,
-      }));
-
-      return {
-        id: parsedDto.id,
-        creatorId: parsedDto.creatorId ?? -1, // Fallback if null
-        createdOn: parsedDto.createdOn?.toISOString() || "",
-        modifedOn: parsedDto.lastModifiedOn?.toISOString() || "",
-        messages,
-      };
-    });
-
-    return chats;
-  } catch (error) {
-    console.error("Error fetching chat histories:", error);
-    throw error;
-  }
-}; */
-
-
-
-
-
-/* export const getChatHistory = ()  => {
-  return axios.get(baseUrl)
-  .then(resp =>         
-    resp.data  
-  )
-  .then(d => 
-{
-  console.log(`Recieved ${JSON.stringify(d)}`)
-  return d
-})
-} */
 
 export const saveChat = async (
-  request: Chat
+  request: ChatDto
 ) => {
 return await axios.put(baseUrl, request)
   .then(response => response.data)

@@ -9,6 +9,10 @@ namespace Infrastructure.Configuration
         public void Configure(EntityTypeBuilder<Chat> builder)
         {
             builder.HasKey(x => x.Id);
+
+            builder.Property(p => p.Id)
+                .UseIdentityColumn();
+
             builder.Property(p => p.CreatorId)
                 .IsRequired();
 

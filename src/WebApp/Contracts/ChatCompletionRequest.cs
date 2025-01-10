@@ -19,8 +19,12 @@
         public int Id { get; set; }
     }
 
-    //public class ChatHistory
-    //{
-    //    public ChatMessage[] Messages { get; set; } = [];
-    //}
+    public record ChatRequest
+    {
+        public int Id { get; set; }
+        public int CreatorId { get; set; }
+        public DateTimeOffset CreatedOn { get; set; }
+        public DateTimeOffset LastModifiedOn { get; set; }
+        public required string Message { get; set; }
+    }
 }

@@ -21,9 +21,9 @@ export const chatDto = z.object({
   lastModifiedOn: z.string().nullable().transform((val) => (val ? new Date(val) : null)),
 });
 
+
+// In Memory //
 export type creater = "user" | "assistant"
-
-
 
 export interface ChatMessage {
   id: number // FOr React list key
@@ -35,7 +35,7 @@ export interface Chat {
   id: number,
   createrId: number,
   createdOn: string,
-  modifedOn: string,
+  modifiedOn: string,
   messages: ChatMessage[]
  }
 
@@ -46,8 +46,7 @@ export interface ChatSummary {
   secondary?: string;
   avatar: string;
 }
+// In Memory //
 
-// TypeScript types inferred from Zod schemas
-//export type ChatCompletionMessage = z.infer<typeof chatMessageSchema>;
 export type ChatRequest = z.infer<typeof chatRequestSchema>;
 export type ChatDto = z.infer<typeof chatDto>

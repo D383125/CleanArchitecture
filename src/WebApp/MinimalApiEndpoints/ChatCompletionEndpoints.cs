@@ -11,12 +11,20 @@ namespace WebApp.MinimalApiEndpoints
 
         internal static void MapChatEndpoints(this IEndpointRouteBuilder app)
         {
-            //TODO:
-            //2. Persist chats (add endpoints) With Save button
+            //TODO:            
             //3. Train Endpoint
-            app.MapPut("/chat", async (ChatAssistantModule chatAssistant, Chat chatRequest, CancellationToken ct) => {                
-
-                await chatAssistant.SaveChatHistoriesAsync(chatRequest, ct);
+            app.MapPut("/chat", async (ChatAssistantModule chatAssistant, ChatRequest chatRequest, CancellationToken ct) => {
+                //TODO: Use AutoMapper
+                Chat entity = new()
+                {
+                    Id = chatRequest.Id,
+                    CreatedOn = chatRequest.CreatedOn,
+                    LastModifiedOn = chatRequest.LastModifiedOn,
+                    CreatorId = chatRequest.CreatorId,
+                    Message = chatRequest.Message,
+                };
+                
+                await chatAssistant.SaveChatAsync(entity, ct);
                  
             })
             .WithName("SaveChats")
@@ -56,7 +64,7 @@ namespace WebApp.MinimalApiEndpoints
                 CancellationToken ct) =>
             {
             var chatHistory = await cache.GetAsync("allChatHistory", 
-                async token => await chatAssistant.GetChatHistoryAsync(ct),
+                async token => await chatAssistant.GetChatAsync(ct),
                     CacheOptions.DefaultExpiration,
                     ct);
 

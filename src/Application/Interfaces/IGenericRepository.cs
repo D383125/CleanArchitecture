@@ -22,5 +22,7 @@ namespace Application.Interfaces
         Task<T> GetByIdAsync(int Id);        
         Task UpdateAsync(T entity);
         Task UpdateRangeAsync(T[] entity);
+        Task AddOrUpdateAsync(T entity);
+        Task CommitAsync(CancellationToken cancellationToken);
     }
 }

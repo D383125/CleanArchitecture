@@ -2,7 +2,6 @@
 using Application.Common.Interface;
 using Domain.Entities;
 using Application.Interfaces;
-using OpenAI.Chat;
 
 namespace Application.Modules
 {
@@ -18,7 +17,9 @@ namespace Application.Modules
         }
 
         public async IAsyncEnumerable<string> StreamChatCompletionAsync(IEnumerable<KeyValuePair<string, string>> messages, string model)
-        {            
+        {   
+            ArgumentNullException.ThrowIfNull(nameof(messages));
+
             var completionUpdates = _chatClient.CompleteChatStreaming(messages, model);
 
             await foreach (var completionUpdate in completionUpdates)
@@ -30,21 +31,20 @@ namespace Application.Modules
             }         
         }
 
-        public async Task<IEnumerable<Chat>> GetChatHistoryAsync(CancellationToken cancellationToken)
+        public async Task<IEnumerable<Chat>> GetChatAsync(CancellationToken cancellationToken)
         {            
             var conversations = await _repository.GetAll();
 
             return conversations;
         }
 
-        public async Task SaveChatHistoriesAsync(Chat chatRequest, CancellationToken cancellationToken)
+        public async Task SaveChatAsync(Chat chatRequest, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(chatRequest, nameof(chatRequest));
 
             System.Diagnostics.Trace.TraceInformation($"Saving {chatRequest}");
-            
-           // _repository.UpdateRangeAsync(chatMessages.ToArray());
-           await Task.CompletedTask; 
+            await _repository.AddOrUpdateAsync(chatRequest);            
+            await _repository.CommitAsync(cancellationToken);           
         }
     }
 }

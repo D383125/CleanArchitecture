@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, memo } from 'react';
 import { Avatar, Box, Button, CircularProgress, Container, Paper, TextField, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
@@ -11,9 +11,6 @@ import { streamChatCompletion } from './network';
 import { useGetChats, useSaveChat } from './hooks';
 import ReactPlaceholder from 'react-placeholder';
 import { useForm } from "react-hook-form";
-
-
-
 
 const muiStyles = {
   container: {
@@ -70,7 +67,6 @@ const muiStyles = {
 };
 
 
-
 const SupportChat = () => {
   const [chatConversations, loading , ] = useGetChats() 
   const { saveChats, loading: saveLoading, error: saveError } = useSaveChat();
@@ -91,15 +87,14 @@ const SupportChat = () => {
     , [isDirty])
 
 
-  const onSubmit = async () => {
-    console.log(`Submitting ${JSON.stringify(currentChat)}`)
+  const onSubmit = async () => {    
     if (!currentChat) {
       alert('No messages to save.');
       return;
     }
 
-    try {
-      await saveChats(currentChat);
+    try {      
+      await saveChats(currentChat, currentMessage);
       reset(); // Clear the form after successful submission
       setIsDirty(false)
       alert('Chat saved!');
@@ -115,32 +110,18 @@ const SupportChat = () => {
         return {
           id: h.id, 
           primary: `Chat ${index}`,
-          secondary: h.messages[0].content, //TODO: NEED to deselize json into message list here and get first
+          secondary: h.messages[0].content,
           avatar: '/static/images/avatar/5.jpg',
         }
       })
 
     setChatSummaries(chatSummaries)
-    /* const initialChatConversations: Chat[] = chatConversations.map( (m, i) => 
-    {
-      var index = i + 1
-      return {
-        id: index,
-        role: m.createrId === 1 ? 'user' : 'assistant',
-        content: m.messages
-      }
-    }) */
-    //Set intial form state  
-    //reset(initialChatConversations)
     reset(chatConversations)
   }
   }, [chatConversations, loading, reset])
   
-  //TODO: Wednesday - UPdate ChatMessage[] with FullChat type
-
   const handleChatSelect = useCallback(
-    (chat: ChatSummary) => {
-      //TODDO: Friday - start here, is not loading
+    (chat: ChatSummary) => {  
       setSelectedChatSummary(chat);      
       const targetChat = chatConversations.find(c => c.id === chat.id)
       if(targetChat){
@@ -148,22 +129,16 @@ const SupportChat = () => {
         setCurrentMessage(targetChat.messages)
       }
       else {
-        //TODO: Allocte new Chat 
         const newChat: Chat = {
-          id: Date.now(), // Use a unique ID, here using current timestamp
-          createrId: 1, // Default creator ID (can be updated based on your logic)
-          createdOn: new Date().toISOString(), // Current date and time in ISO format
-          modifedOn: new Date().toISOString(), // Same as createdOn initially
-          messages: [] // Start with an empty message array
+          id: -1,
+          createrId: 1, 
+          createdOn: new Date().toISOString(),
+          modifiedOn: new Date().toISOString(),
+          messages: [] 
         };
         setCurrentChat(newChat)
         setCurrentMessage(newChat.messages)
-      }
-        
-      // setCurrentChat([
-      //   { id: 1, role: 'user', content: `${chat.primary}` },
-      //   ...(chat.secondary ? [{ id: 2, role: 'user' as creater, content: chat.secondary }] : []),
-      // ]);
+      }      
     },
     [chatConversations]
   );
@@ -227,14 +202,18 @@ const SupportChat = () => {
   }, [newMessage, currentChat?.messages.length, currentMessage]); 
   
   const handleStartNewChat = useCallback(() => {
+    const highestId = chatConversations.length > 0
+    ? Math.max(...chatConversations.flatMap(c => c.id))
+    : 0; 
+
     const newChat: ChatSummary = {
-      id: chatSummaries.length + 1,
+      id: highestId + 1,
       primary: `New Chat ${chatSummaries.length + 1}`,
       avatar: "/static/images/avatar/placeholder.jpg",
     };
     setChatSummaries((prev) => [newChat, ...prev]);
     handleChatSelect(newChat);
-  }, [chatSummaries.length, handleChatSelect]);
+  }, [chatConversations, chatSummaries.length, handleChatSelect]);
 
   const customPlaceHolder = (
     <>
@@ -372,6 +351,4 @@ const SupportChat = () => {
   );
 };
 
-
-export default SupportChat;
-
+export default memo(SupportChat) 
