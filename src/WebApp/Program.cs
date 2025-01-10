@@ -1,11 +1,13 @@
 using Application.Modules;
-using Infrastructure;
 using Infrastructure.AiProviders;
 using Infrastructure.Configuration;
+using Infrastructure.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using WebApp.MinimalApiEndpoints;
 using WebApp.Startup;
+//using DI.Generated;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +17,9 @@ builder.Services.AddControllers();
 builder.Services.AddWebServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.RegisterDIAttributes([Assembly.GetAssembly(typeof(ChatAssistantModule)), Assembly.GetAssembly(typeof(ChatGdpClient))]);
+//TODO: Use Source genertor for reflection
+//builder.Services.AddGeneratedDIRegistrations();
+
 
 builder.Services.AddSwaggerGen();
 

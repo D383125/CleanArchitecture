@@ -49,26 +49,29 @@ namespace WebApp.Startup
 
         public static IServiceCollection RegisterDIAttributes(this IServiceCollection services, Assembly[] assembly)
         {
+            //Do seource generators need to be in a seperate project? Dont think os
+            //services.AddGeneratedDIRegistrations();
+
             var typesWithDiAttribute = assembly.SelectMany(a => a.GetTypes()
-                .Where(type => (type.IsClass || type.IsInterface)  && !type.IsAbstract && type.GetCustomAttribute<DIAttribute>() != null));
+                .Where(type => (type.IsClass || type.IsInterface) && !type.IsAbstract && type.GetCustomAttribute<DIAttribute>() != null));
 
             foreach (var type in typesWithDiAttribute)
             {
                 var attribute = type.GetCustomAttribute<DIAttribute>();
-                var lifetime = attribute!.Lifetime;                
+                var lifetime = attribute!.Lifetime;
 
                 // Register the type based on the specified lifetime
                 switch (lifetime)
                 {
                     case ServiceLifetime.Singleton:
-                        if(attribute.ImplimentingType != null)
+                        if (attribute.ImplimentingType != null)
                         {
                             services.AddSingleton(attribute.ImplimentingType, type);
                         }
                         else
                         {
                             services.AddSingleton(type);
-                        }                        
+                        }
                         break;
                     case ServiceLifetime.Transient:
                         if (attribute.ImplimentingType != null)
@@ -78,7 +81,7 @@ namespace WebApp.Startup
                         break;
 
                     case ServiceLifetime.Scoped:
-                    default:                    
+                    default:
                         if (attribute.ImplimentingType != null)
                         {
                             services.AddScoped(attribute.ImplimentingType, type);

@@ -1,29 +1,43 @@
 import { z } from "zod";
 
-const chatCompletionMessageSchema = z.object({
+const chatMessageSchema = z.object({
   role: z.enum(["system", "user", "assistant"]),
   content: z.string(),
 });
 
-const chatCompletionRequestSchema = z.object({
-  model: z.string().default("gpt-4o"), // Default value
-  messages: z.array(chatCompletionMessageSchema).default([]), // Default to an empty array
-});
-
-export const chatMessageDto = z.object({
-  message: z.string(),
+const chatRequestSchema = z.object({
+  model: z.string().default("gpt-4o"), 
+  messages: z.array(chatMessageSchema).default([]),
   createrId: z.number().nullish(),
   createdOn: z.date().nullish(),
-  modiifedOn: z.date().nullish(),
-})
+  modifedOn: z.date().nullish(),
+});
+
+export const chatDto = z.object({
+  id: z.number(),
+  message: z.string(),
+  creatorId: z.number().nullish(),
+  createdOn: z.string().nullable().transform((val) => (val ? new Date(val) : null)),
+  lastModifiedOn: z.string().nullable().transform((val) => (val ? new Date(val) : null)),
+});
 
 export type creater = "user" | "assistant"
 
+
+
 export interface ChatMessage {
-  id: number
+  id: number // FOr React list key
   role: creater
   content: string
 }
+
+export interface Chat {
+  id: number,
+  createrId: number,
+  createdOn: string,
+  modifedOn: string,
+  messages: ChatMessage[]
+ }
 
 export interface ChatSummary {
   id: number;
@@ -34,6 +48,6 @@ export interface ChatSummary {
 }
 
 // TypeScript types inferred from Zod schemas
-export type ChatCompletionMessage = z.infer<typeof chatCompletionMessageSchema>;
-export type ChatCompletionRequest = z.infer<typeof chatCompletionRequestSchema>;
-export type ChatMessageDto = z.infer<typeof chatMessageDto>
+//export type ChatCompletionMessage = z.infer<typeof chatMessageSchema>;
+export type ChatRequest = z.infer<typeof chatRequestSchema>;
+export type ChatDto = z.infer<typeof chatDto>

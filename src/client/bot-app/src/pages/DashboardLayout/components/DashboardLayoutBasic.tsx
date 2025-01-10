@@ -10,7 +10,7 @@ import LayersIcon from '@mui/icons-material/Layers';
 import { AppProvider, Router, type Navigation } from '@toolpad/core/AppProvider';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 import { Route, Routes } from 'react-router-dom';
-import  Chat from '../../../features/chat/Chat';
+import  Chat from '../../../features/chat/SupportChat';
 
 
 const NAVIGATION: Navigation = [

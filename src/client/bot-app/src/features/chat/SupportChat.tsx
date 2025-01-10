@@ -6,11 +6,11 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
-import { ChatCompletionRequest, ChatMessage, ChatSummary, creater } from './types';
+import { ChatRequest, ChatMessage, ChatSummary, creater, Chat } from './types';
 import { streamChatCompletion } from './network';
 import { useGetChats, useSaveChat } from './hooks';
 import ReactPlaceholder from 'react-placeholder';
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 
 
 
@@ -71,17 +71,18 @@ const muiStyles = {
 
 
 
-const Chat = () => {
+const SupportChat = () => {
   const [chatConversations, loading , ] = useGetChats() 
   const { saveChats, loading: saveLoading, error: saveError } = useSaveChat();
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const [chatSummaries, setChatSummaries] = useState<ChatSummary[]>([]);
   const [selectedChatSummary, setSelectedChatSummary] = useState<ChatSummary | null>();
-  const [currentChatHistory, setCurrentChatHistory] = useState<ChatMessage[]>([]);
+  const [currentChat, setCurrentChat] = useState<Chat>();
+  const [currentMessage, setCurrentMessage] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [sendError, setSendError] = useState<boolean>(false);
   const [helperText, setHelperText] = useState("");
-  const { register, handleSubmit, reset, formState: { errors }, } = useForm<ChatMessage[]>();
+  const { handleSubmit, reset, formState: { errors }, } = useForm<Chat[]>();
   const [isDirty, setIsDirty] = useState<Boolean>(false)
 
   
@@ -91,14 +92,14 @@ const Chat = () => {
 
 
   const onSubmit = async () => {
-    console.log(`Submitting ${JSON.stringify(currentChatHistory)}`)
-    if (!currentChatHistory.length) {
+    console.log(`Submitting ${JSON.stringify(currentChat)}`)
+    if (!currentChat) {
       alert('No messages to save.');
       return;
     }
 
     try {
-      await saveChats(currentChatHistory);
+      await saveChats(currentChat);
       reset(); // Clear the form after successful submission
       setIsDirty(false)
       alert('Chat saved!');
@@ -108,43 +109,63 @@ const Chat = () => {
   };
 
   useEffect(() => {
-    if(!loading && chatConversations !== null)
-    {
+    if(!loading && chatConversations !== null){            
       const chatSummaries: ChatSummary[] = chatConversations.map((h, i) => {
         var index = i + 1
         return {
-          id: index, 
+          id: h.id, 
           primary: `Chat ${index}`,
-          secondary: h.message, 
+          secondary: h.messages[0].content, //TODO: NEED to deselize json into message list here and get first
           avatar: '/static/images/avatar/5.jpg',
         }
       })
 
     setChatSummaries(chatSummaries)
-    const initialChatConversations: ChatMessage[] = chatConversations.map( (m, i) => 
+    /* const initialChatConversations: Chat[] = chatConversations.map( (m, i) => 
     {
       var index = i + 1
       return {
         id: index,
         role: m.createrId === 1 ? 'user' : 'assistant',
-        content: m.message
+        content: m.messages
       }
-    })
+    }) */
     //Set intial form state  
-    reset(initialChatConversations)
+    //reset(initialChatConversations)
+    reset(chatConversations)
   }
   }, [chatConversations, loading, reset])
   
+  //TODO: Wednesday - UPdate ChatMessage[] with FullChat type
 
   const handleChatSelect = useCallback(
     (chat: ChatSummary) => {
-      setSelectedChatSummary(chat);
-      setCurrentChatHistory([
-        { id: 1, role: 'user', content: `${chat.primary}` },
-        ...(chat.secondary ? [{ id: 2, role: 'user' as creater, content: chat.secondary }] : []),
-      ]);
+      //TODDO: Friday - start here, is not loading
+      setSelectedChatSummary(chat);      
+      const targetChat = chatConversations.find(c => c.id === chat.id)
+      if(targetChat){
+        setCurrentChat(targetChat)
+        setCurrentMessage(targetChat.messages)
+      }
+      else {
+        //TODO: Allocte new Chat 
+        const newChat: Chat = {
+          id: Date.now(), // Use a unique ID, here using current timestamp
+          createrId: 1, // Default creator ID (can be updated based on your logic)
+          createdOn: new Date().toISOString(), // Current date and time in ISO format
+          modifedOn: new Date().toISOString(), // Same as createdOn initially
+          messages: [] // Start with an empty message array
+        };
+        setCurrentChat(newChat)
+        setCurrentMessage(newChat.messages)
+      }
+        
+      // setCurrentChat([
+      //   { id: 1, role: 'user', content: `${chat.primary}` },
+      //   ...(chat.secondary ? [{ id: 2, role: 'user' as creater, content: chat.secondary }] : []),
+      // ]);
     },
-    []
+    [chatConversations]
   );
   
    const handleSendMessage = useCallback(() => {    
@@ -157,15 +178,15 @@ const Chat = () => {
     setIsDirty(true)
     setSendError(false);
     setHelperText(""); // Clear any previous error message
-
-    const userMessage = { id: currentChatHistory.length + 1, role: 'user' as creater, content: newMessage };
-    setCurrentChatHistory((prev) => [...prev, userMessage]);
+    const id = currentChat?.messages.length ?? 0
+    const userMessage = { id: id + 1, role: 'user' as creater, content: newMessage };
+    setCurrentMessage((prev) => [...prev, userMessage]);
     setNewMessage("");
 
-    const request: ChatCompletionRequest = {
+    const request: ChatRequest = {
       model: "gpt-4",
       messages: [
-        ...currentChatHistory.map((msg) => ({
+        ...currentMessage.map((msg) => ({
           role: msg.role === 'user' ? 'user' : 'assistant' as 'user' | 'assistant',
           content: msg.content,
         })),
@@ -181,7 +202,8 @@ const Chat = () => {
       request,
       (chunk) => {
         accumulatedText += chunk; // Combine chunks
-        setCurrentChatHistory((prev) => {
+        //TODO: Mix with persisted chat.messages
+        setCurrentMessage((prev) => {
           const assistantMessage = prev.find((msg) => msg.role === 'assistant' && msg.id === prev.length);
           if (assistantMessage) {
             // Update the existing assistant message
@@ -202,7 +224,7 @@ const Chat = () => {
         setIsStreaming(false); // End streaming
       }
     );
-  }, [newMessage, currentChatHistory]); 
+  }, [newMessage, currentChat?.messages.length, currentMessage]); 
   
   const handleStartNewChat = useCallback(() => {
     const newChat: ChatSummary = {
@@ -213,7 +235,6 @@ const Chat = () => {
     setChatSummaries((prev) => [newChat, ...prev]);
     handleChatSelect(newChat);
   }, [chatSummaries.length, handleChatSelect]);
-
 
   const customPlaceHolder = (
     <>
@@ -264,27 +285,27 @@ const Chat = () => {
               </Box>
               <Divider />
               <List>
-          {chatSummaries.length > 0 ? (
-            chatSummaries.map((chat) => (
-              <React.Fragment key={chat.id}>
-                <ListItemButton
-                  onClick={() => handleChatSelect(chat)}
-                  selected={selectedChatSummary?.id === chat.id}
-                  sx={muiStyles.listItemButton(selectedChatSummary?.id === chat.id)}
-                >
-                  <ListItemAvatar>
-                    <Avatar src={chat.avatar} />
-                  </ListItemAvatar>
-                  <ListItemText primary={chat.primary} secondary={chat.secondary || ""} />
-                </ListItemButton>
-                <Divider />
-              </React.Fragment>
-            ))
-          ) : (
-            <Typography variant="body2" sx={{ textAlign: 'center', p: 2 }}>
-              No chats available.
-            </Typography>
-          )}
+              {chatSummaries.length > 0 ? (
+                chatSummaries.map((chat) => (
+                  <React.Fragment key={chat.id}>
+                    <ListItemButton
+                      onClick={() => handleChatSelect(chat)}
+                      selected={selectedChatSummary?.id === chat.id}
+                      sx={muiStyles.listItemButton(selectedChatSummary?.id === chat.id)}
+                    >
+                      <ListItemAvatar>
+                        <Avatar src={chat.avatar} />
+                      </ListItemAvatar>
+                      <ListItemText primary={chat.primary} secondary={chat.secondary || ""} />
+                    </ListItemButton>
+                    <Divider />
+                  </React.Fragment>
+                ))
+              ) : (
+                <Typography variant="body2" sx={{ textAlign: 'center', p: 2 }}>
+                  No chats available.
+                </Typography>
+              )}
         </List>
             </Paper>
           </Grid>
@@ -294,9 +315,9 @@ const Chat = () => {
             <Paper elevation={3} sx={muiStyles.currentChatPaper}>
               {/* Chat History */}
               <Box sx={muiStyles.chatHistoryBox}>
-                {currentChatHistory.map((message) => (
+                {currentMessage.map((message) => (
                   <Box
-                    key={message.id}
+                    key={currentChat?.id !== undefined ? currentChat.id + message.id : message.id}
                     sx={muiStyles.chatMessage(message.role !== 'user')}
                   >
                     <Typography variant="body2">                    
@@ -304,17 +325,13 @@ const Chat = () => {
                       </Typography>
                   </Box>
                 ))}
-
-        {/* TODO:       
-        2. Fix colour of message to go with theme      
-        */}
-          {isStreaming && (
-            <Box sx={muiStyles.chatMessage(false)}>
-              <Typography variant="body2">              
-                {isStreaming && <CircularProgress size={12} sx={{ ml: 1 }} />}
-              </Typography>
-            </Box>
-          )}
+                {isStreaming && (
+                  <Box sx={muiStyles.chatMessage(false)}>
+                    <Typography variant="body2">              
+                      {isStreaming && <CircularProgress size={12} sx={{ ml: 1 }} />}
+                    </Typography>
+                  </Box>
+                )}
               </Box>
               {/* Message Input */}
               <Box sx={muiStyles.inputBox}>
@@ -356,5 +373,5 @@ const Chat = () => {
 };
 
 
-export default Chat;
+export default SupportChat;
 

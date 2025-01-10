@@ -1,13 +1,14 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { getChatHistory, saveChat } from './network';
-import { ChatMessageDto, ChatMessage } from './types';
+import { Chat } from './types';
+import { useQuery } from '@tanstack/react-query';
 
 
 export const useSaveChat = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const saveChats = useCallback(async (request: ChatMessage[]) => {
+  const saveChats = useCallback(async (request: Chat) => {
     setLoading(true);
     setError(null);
     try {
@@ -25,42 +26,15 @@ export const useSaveChat = () => {
   return { saveChats, loading, error };
 };
 
+
 export const useGetChats = () => {
-  const [chatHistories, setChatHistories] = useState<ChatMessageDto[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { data: chatHistories = [], isLoading, error } = useQuery<Chat[]>({
+    queryKey: ['chatHistory'], // Unique query key
+    queryFn: getChatHistory,  // Fetching function
+    staleTime: 5 * 60 * 1000, // Cache data for 5 minutes
+    retry: 3, // Retry failed requests up to 3 times
+    refetchOnWindowFocus: false, // Disable refetching on window focus
+  });
 
-  useEffect(() => {
-    let isMounted = true; // To prevent state updates on unmounted components
-    setLoading(true);
-
-    getChatHistory()
-      .then(data => {
-        if (isMounted) {
-          setChatHistories(data);
-          setError(null); // Clear error if successful
-        }
-      })
-      .catch(err => {
-        if (isMounted) {
-          console.error("Error fetching chat histories:", err);
-          setError(err);
-        }
-      })
-      .finally(() => {
-        if (isMounted) {
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      isMounted = false; // Cleanup function to prevent memory leaks
-    };
-  }, []);
-
-  return [chatHistories, loading, error] as const;
-};
-function useCallBack(arg0: () => (() => void) | undefined, arg1: any[]) {
-  throw new Error('Function not implemented.');
+  return [chatHistories, isLoading, error] as const;
 }
-

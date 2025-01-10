@@ -2,6 +2,7 @@
 
 namespace Domain.Attributes
 {
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
     public class DIAttribute : Attribute
     {
         public ServiceLifetime Lifetime { get; }
