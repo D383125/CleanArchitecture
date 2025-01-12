@@ -18,6 +18,7 @@ namespace Infrastructure.AiProviders
 
         public async IAsyncEnumerable<string> CompleteChatStreaming(IEnumerable<KeyValuePair<string, string>> messages, string model = "gpt-4")
         {
+            const int baseIndex = 0;
             var client = _client.GetChatClient(model);
 
             var nativeMessages = messages.Select<KeyValuePair<string, string>, ChatMessage>
@@ -43,7 +44,7 @@ namespace Infrastructure.AiProviders
             {
                 if (completionUpdate.ContentUpdate.Count > 0 && !string.IsNullOrEmpty(completionUpdate.ContentUpdate[0].Text))
                 {
-                    yield return completionUpdate.ContentUpdate[0].Text;
+                    yield return completionUpdate.ContentUpdate[baseIndex].Text;
                 }
             }
         }

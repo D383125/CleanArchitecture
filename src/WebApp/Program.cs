@@ -1,3 +1,4 @@
+using Application.Mapping;
 using Application.Modules;
 using Infrastructure.AiProviders;
 using Infrastructure.Configuration;
@@ -6,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using WebApp.MinimalApiEndpoints;
 using WebApp.Startup;
-//using DI.Generated;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,12 +15,11 @@ var builder = WebApplication.CreateBuilder(args);
 //ConfigureServices method is optional and defined inside startup class as mentioned in above code. It gets called by the host before the 'Configure' method to configure the app's services.
 builder.Services.AddControllers();
 builder.Services.AddWebServices();
+builder.Services.AddAutoMapper(typeof(RequestMappingProfile));
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.RegisterDIAttributes([Assembly.GetAssembly(typeof(ChatAssistantModule)), Assembly.GetAssembly(typeof(ChatGdpClient))]);
 //TODO: Use Source genertor for reflection
 //builder.Services.AddGeneratedDIRegistrations();
-
-
 builder.Services.AddSwaggerGen();
 
 //2. Once services are added, configure the middle ware pipleine
@@ -31,6 +30,7 @@ builder.Services.AddOptions<ApplicationOptions>()
     .Bind(builder.Configuration.GetSection("Application"))
     .ValidateDataAnnotations() // Validates [Required] and other annotations
     .Validate(options => !string.IsNullOrWhiteSpace(options.OpenAIKey), "OpenAIKey is required.");
+
 builder.Services.AddStackExchangeRedisCache(options =>
     options.Configuration = builder.Configuration.GetConnectionString("Cache")
 );

@@ -11,6 +11,7 @@ import { streamChatCompletion } from './network';
 import { useGetChats, useSaveChat } from './hooks';
 import ReactPlaceholder from 'react-placeholder';
 import { useForm } from "react-hook-form";
+import useSmallScreen from '../../hooks/hooks';
 
 const muiStyles = {
   container: {
@@ -68,6 +69,7 @@ const muiStyles = {
 
 
 const SupportChat = () => {
+  const isSmallScreen = useSmallScreen()
   const [chatConversations, loading , ] = useGetChats() 
   const { saveChats, loading: saveLoading, error: saveError } = useSaveChat();
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
@@ -81,9 +83,10 @@ const SupportChat = () => {
   const { handleSubmit, reset, formState: { errors }, } = useForm<Chat[]>();
   const [isDirty, setIsDirty] = useState<Boolean>(false)
 
-  
+  console.log(`Ìs Mobile = ${isSmallScreen}`)
+
   useEffect(() =>
-    console.log(`IS Form dirty ${isDirty}`)
+    console.log(`IS Form dirty ${isDirty}`)  
     , [isDirty])
 
 
