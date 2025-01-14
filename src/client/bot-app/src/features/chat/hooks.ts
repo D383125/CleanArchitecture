@@ -1,9 +1,9 @@
-import { useState, useCallback } from 'react';
-import { getChatHistory, saveChat } from './network';
-import { Chat, ChatDto, ChatMessage } from './types';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState, useCallback } from "react";
+import { getChatHistory, saveChat } from "./network";
+import { Chat, ChatDto, ChatMessage } from "./types";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-const chatCacheKey = 'chatHistory'
+const chatCacheKey = "chatHistory";
 
 export const useSaveChat = () => {
   const [loading, setLoading] = useState(false);
@@ -28,28 +28,31 @@ export const useSaveChat = () => {
         queryClient.invalidateQueries({ queryKey: [chatCacheKey] });
         return response.data;
       } catch (err) {
-        console.error('Error saving chat:', err);
+        console.error("Error saving chat:", err);
         setError(err as Error);
         throw err;
       } finally {
         setLoading(false);
       }
     },
-    [queryClient]
+    [queryClient],
   );
 
   return { saveChats, loading, error };
 };
 
-
 export const useGetChats = () => {
-  const { data: chatHistories = [], isLoading, error } = useQuery<Chat[]>({
-    queryKey: [chatCacheKey], 
-    queryFn: getChatHistory,  
+  const {
+    data: chatHistories = [],
+    isLoading,
+    error,
+  } = useQuery<Chat[]>({
+    queryKey: [chatCacheKey],
+    queryFn: getChatHistory,
     staleTime: 5 * 60 * 1000, // Cache data for 5 minutes
     retry: 3, // Retry failed requests up to 3 times
     refetchOnWindowFocus: true, // Disable refetching on window focus
   });
 
   return [chatHistories, isLoading, error] as const;
-}
+};
