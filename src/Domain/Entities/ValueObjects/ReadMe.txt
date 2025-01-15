@@ -1,0 +1,1 @@
+﻿Keep for immutable objects without an identity. It represents a descriptive aspect of the domain. e.g. Address

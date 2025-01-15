@@ -4,6 +4,7 @@ using Infrastructure.AiProviders;
 using Infrastructure.Configuration;
 using Infrastructure.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 using System.Reflection;
 using WebApp.MinimalApiEndpoints;
 using WebApp.Startup;
@@ -34,6 +35,12 @@ builder.Services.AddOptions<ApplicationOptions>()
 builder.Services.AddStackExchangeRedisCache(options =>
     options.Configuration = builder.Configuration.GetConnectionString("Cache")
 );
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var configuration = builder.Configuration.GetConnectionString("Cache");
+    return ConnectionMultiplexer.Connect(configuration);
+});
+
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
 
 builder.Services.AddCors(options =>
@@ -46,6 +53,8 @@ builder.Services.AddCors(options =>
              .AllowAnyMethod();
     });
 });
+//Validate Container config and scopes e.f. no scoped ssercies referenced as Singleton
+builder.Host.UseDefaultServiceProvider(c => c.ValidateScopes = true);
 
 var app = builder.Build();
 

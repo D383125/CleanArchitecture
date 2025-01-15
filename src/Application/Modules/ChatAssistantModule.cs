@@ -4,6 +4,7 @@ using Domain.Entities;
 using Application.Interfaces;
 using Application.Dto;
 using AutoMapper;
+using Domain.Events;
 
 namespace Application.Modules
 {
@@ -13,12 +14,14 @@ namespace Application.Modules
         private readonly IGenericRepository<Chat> _repository;
         private readonly IChatClient _chatClient;
         private readonly IMapper _mapper;
+        private readonly IRedisPublisher _redisPublisher;
 
-        public ChatAssistantModule(IGenericRepository<Chat> repository, IChatClient chatClient, IMapper mapper)
+        public ChatAssistantModule(IGenericRepository<Chat> repository, IChatClient chatClient, IMapper mapper, IRedisPublisher redisPublisher)
         {
             _repository = repository;
             _chatClient = chatClient;
             _mapper = mapper;
+            _redisPublisher = redisPublisher;
         }
 
         public async IAsyncEnumerable<string> StreamChatCompletionAsync(IEnumerable<KeyValuePair<string, string>> messages, string model)
@@ -37,7 +40,8 @@ namespace Application.Modules
         }
 
         public async Task<IEnumerable<Chat>> GetChatAsync(CancellationToken cancellationToken)
-        {            
+        {
+            cancellationToken.ThrowIfCancellationRequested();
             var conversations = await _repository.GetAll();
 
             return conversations;
@@ -46,11 +50,13 @@ namespace Application.Modules
         public async Task SaveChatAsync(ChatDto chatRequest, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(chatRequest, nameof(chatRequest));
+            cancellationToken.ThrowIfCancellationRequested();
 
             System.Diagnostics.Trace.TraceInformation($"Saving {chatRequest}");
             Chat entity = _mapper.Map<Chat>(chatRequest);
             await _repository.AddOrUpdateAsync(entity);
-            await _repository.CommitAsync(cancellationToken);           
+            await _repository.CommitAsync(cancellationToken);
+            await _redisPublisher.PublishAsync(Channel.ChatSaved, new ChatSavedEvent(entity.Id));
         }
     }
 }

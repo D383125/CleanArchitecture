@@ -10,9 +10,7 @@ namespace Infrastructure
             : base(options)
         {
             ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-        }
-        
-        public DbSet<Product> Products { get; set; }
+        }                
         
         public DbSet<Chat> ChatHistory { get; set; }
 
