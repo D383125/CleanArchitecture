@@ -34,3 +34,5 @@
 /src/DataMigration/bin/Debug/net8.0
 /src/DataMigration/obj/Debug/net8.0
 /src/DataMigration/obj
+/src/ssl/
+
