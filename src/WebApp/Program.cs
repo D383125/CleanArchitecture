@@ -63,6 +63,12 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseDeveloperExceptionPage();
+}
+else
+{
+    app.UseExceptionHandler("/Error");
+    app.UseHsts();
 }
 
 //The Request handling pipeline is a sequence of middleware components where each component performs the operation on request and either call the next middleware component
@@ -74,7 +80,6 @@ app.UseRouting();
 // Apply the CORS middleware before the controllers
 
 app.UseCors("AllowReactClient");
-
 app.UseAuthorization();
 app.MapControllers();
 app.UseHealthChecks("/health");
@@ -82,6 +87,8 @@ app.UseHealthChecks("/health");
 //Map Minimal endpoints
 app.MapAuthenticationEndpoints();
 app.MapChatEndpoints();
+
+System.Diagnostics.Trace.TraceInformation($"Running in '{app.Environment.EnvironmentName}' Environment.");
 
 //Terminate the request pipleine with app.run
 app.Run();
