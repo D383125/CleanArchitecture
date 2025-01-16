@@ -37,3 +37,4 @@
 /src/ssl/
 
 /ssl
+/src/WebApp/appsettings.Development.json
