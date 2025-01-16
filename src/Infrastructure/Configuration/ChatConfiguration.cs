@@ -4,12 +4,15 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Configuration
 {
-    //TODO: Remove as Domain shopuld not have any external references like EFCore. Should be Entreprise Business items only
     internal class ChatConfiguration : IEntityTypeConfiguration<Chat>
     {
         public void Configure(EntityTypeBuilder<Chat> builder)
         {
             builder.HasKey(x => x.Id);
+
+            builder.Property(p => p.Id)
+                .UseIdentityColumn();
+
             builder.Property(p => p.CreatorId)
                 .IsRequired();
 

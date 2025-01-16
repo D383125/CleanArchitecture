@@ -1,14 +1,8 @@
 ﻿using Application.Interfaces;
-using Domain;
 using Domain.Entities;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure
 {
@@ -17,6 +11,7 @@ namespace Infrastructure
         protected readonly ApplicationDbContext _context;
         internal DbSet<T> _set;
 
+        //Impliment when diff repostiryes are used on the same tracnaction
         //public IUnitOfWork UnitOfWork => _context;
 
         public GenericRepository(ApplicationDbContext context)
@@ -79,6 +74,31 @@ namespace Infrastructure
             _context.Entry(entity).State = EntityState.Modified;
             return Task.CompletedTask;
         }
-    }
 
+        public Task UpdateRangeAsync(T[] entity)
+        {
+            Array.ForEach(entity, e => _context.Entry(e).State = EntityState.Modified);
+            return Task.CompletedTask;
+        }
+
+        public async Task AddOrUpdateAsync(T entity)
+        {
+            var exists = await GetByIdAsync(entity.Id);
+
+            if (exists == null)
+            {
+                entity.Id = default;
+                await AddAsync(entity);
+            }
+            else
+            {                
+                await UpdateAsync(entity);
+            }
+        }
+
+        public async Task CommitAsync(CancellationToken cancellationToken)
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+    }
 }

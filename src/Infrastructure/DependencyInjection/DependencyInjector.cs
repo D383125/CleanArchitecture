@@ -5,19 +5,19 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Infrastructure
+namespace Infrastructure.DependencyInjection
 {
-    public static class DependencyInjection
+    public static class DependencyInjector
     {
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
             var temp = configuration.GetConnectionString("Database");
 
             services.AddDbContext<ApplicationDbContext>(
-                options =>                
+                options =>
                     options
                     .UseNpgsql(configuration.GetConnectionString("Database"))
-                    .UseLowerCaseNamingConvention()                
+                    .UseLowerCaseNamingConvention()
             );
 
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));

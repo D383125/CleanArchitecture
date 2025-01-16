@@ -1,4 +1,5 @@
-﻿using Application.Modules;
+﻿using Application.Dto;
+using Application.Modules;
 using Domain.Entities;
 using Microsoft.Extensions.Caching.Distributed;
 using WebApp.Contracts;
@@ -8,14 +9,32 @@ namespace WebApp.MinimalApiEndpoints
     internal static class ChatCompletionEndpoints
     {
         //TODO: Map Group to map all endpoints
+        private const string ChatCacheKey = "ChatHistoryKey";
 
         internal static void MapChatEndpoints(this IEndpointRouteBuilder app)
         {
-            //TODO:
-            //1. Add resids cache check
-            //2. Persist chats (add endpoints) With Save button
+            //TODO:            
             //3. Train Endpoint
-            app.MapPost("/chat", async (ChatAssistantModule chatAssistant, ChatCompletionRequest chatRequest, HttpContext context) =>
+            app.MapPut("/chat", async (ChatAssistantModule chatAssistant, ChatDto chatDto, IDistributedCache cache, CancellationToken ct) => {
+                //TODO: Use AutoMapper
+                //Chat entity = new()
+                //{
+                //    Id = chatDto.Id,
+                //    CreatedOn = chatDto.CreatedOn,
+                //    LastModifiedOn = chatDto.LastModifiedOn,
+                //    CreatorId = chatDto.CreatorId,
+                //    Message = chatDto.Message,
+                //};
+                
+                await chatAssistant.SaveChatAsync(chatDto, ct);
+                await cache.RemoveAsync(ChatCacheKey, ct);
+            })
+            .WithName("SaveChats")
+            .WithTags("Chat bot")
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest);
+
+            app.MapPost("/chat", async (ChatAssistantModule chatAssistant, ChatCompletionDto chatRequest, HttpContext context) =>
             {
                 try
                 {
@@ -40,35 +59,14 @@ namespace WebApp.MinimalApiEndpoints
             .Produces<string>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest);
 
-
             app.MapGet("/chat", async (
                 ChatAssistantModule chatAssistant, 
                 IDistributedCache cache, 
                 HttpContext context, 
                 CancellationToken ct) =>
             {
-            var chatHistory = await cache.GetAsync("allChatHistory", 
-                async token =>
-                    {
-                        //ValueTask.FromResult
-                        //return await Task.FromResult(new List<Chat>()
-                        //{                           
-                        //    new() 
-                        //    {
-                        //        CreatedOn = DateTime.UtcNow,
-                        //        LastModifiedOn = DateTime.UtcNow,
-                        //        Message = "Lorem ipsum dolor"
-                        //    },
-                        //    new()
-                        //    {
-                        //        CreatedOn = DateTime.UtcNow,
-                        //        LastModifiedOn = DateTime.UtcNow,
-                        //        Message = "Lorem ipsum dolor II"
-                        //    }
-                        //});
-                        return await chatAssistant.GetChatHistory(ct);
-
-                    },
+            var chatHistory = await cache.GetAsync(ChatCacheKey, 
+                async token => await chatAssistant.GetChatAsync(ct),
                     CacheOptions.DefaultExpiration,
                     ct);
 
