@@ -19,8 +19,7 @@ services:
       args:
         BUILD_CONFIGURATION: ${BUILD_CONFIGURATION:-Release}
     image: webapp:${BUILD_CONFIGURATION:-release}
-    environment:
-      DOTNET_ENVIRONMENT: ${BUILD_CONFIGURATION:-Release}
+    environment:      
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
     ports:
       - "8080:8080"

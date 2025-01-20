@@ -6,20 +6,21 @@ using Application.Modules;
 using Application.UnitTests.MockServices;
 using AutoMapper;
 using Domain.Entities;
+using Domain.Events;
+using Infrastructure;
 using Infrastructure.Services;
 using Moq;
 using StackExchange.Redis;
 
 namespace Application.UnitTests
 {
-    //TODO: See https://www.youtube.com/watch?v=8IRNC7qZBmk
-    //Wire up to docker
 
     public class ChatAssistantModuleShould
     {
         //Move to TextContext
         private readonly IMapper _mapper;
         private readonly IRedisPublisher _redisPublisher;
+        private readonly IRedisSubscriber _redisSubscriber;
 
         public ChatAssistantModuleShould()
         {
@@ -35,13 +36,14 @@ namespace Application.UnitTests
                 .Setup(m => m.GetSubscriber(It.IsAny<object>()))
                 .Returns(subscriberMock.Object);
             _redisPublisher = new RedisPublisher(connectionMultiplexerMock.Object);
+            _redisSubscriber = new RedisSubscriber(connectionMultiplexerMock.Object);
         }                
 
         [Fact]        
         public async Task ReturnConversationFromStreamChatCompletion()
-        {
-            var context = new TestContext();
+        {            
             IChatClient mockChatClient = new MockChatClient();
+            var context = new TestContext();
             var repositoryMock = context.CreateService<IGenericRepository<Chat>>();
             var sut = new ChatAssistantModule(repositoryMock, mockChatClient, _mapper, _redisPublisher);
 
@@ -57,10 +59,10 @@ namespace Application.UnitTests
         [Fact]
         public async Task CreateNewChatConversationsSucessfully()
         {
-            //TODO: Add postgtes docker db
             var context = new TestContext();
+            await context.InitializeAsync();
             IChatClient mockChatClient = new MockChatClient();
-            var repositoryMock = context.CreateService<IGenericRepository<Chat>>();
+            var repositoryMock = context.CreateService<GenericRepository<Chat>>(context.DbContext);
             var sut = new ChatAssistantModule(repositoryMock, mockChatClient, _mapper, _redisPublisher);
             var chatRequest = new ChatDto
             {
@@ -70,8 +72,17 @@ namespace Application.UnitTests
                 LastModifiedOn = DateTime.UtcNow,
             };
 
+            await _redisSubscriber.Subscribe<ChatSavedEvent>(Enum.GetName(Channel.ChatSaved)!, t =>
+            {
+                Assert.NotEqual(0, t.ChatId);
+            });
             await sut.SaveChatAsync(chatRequest, CancellationToken.None);
-
+            
+            var created = context.DbContext.ChatHistory.Where(c => c.CreatorId == chatRequest.CreatorId)
+                .Select(c => c)
+                .FirstOrDefault();
+            Assert.Equal(created.CreatorId, chatRequest.CreatorId);
+            Assert.True(created.Id != default);
         }        
 
         [Fact]
