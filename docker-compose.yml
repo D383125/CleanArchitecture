@@ -15,15 +15,17 @@ services:
   webapp:
     build:
       context: .
-      dockerfile: src/WebApp/Dockerfile
+      #RUN ls -la /src # For debugging
+      dockerfile: src/WebApp/Dockerfile      
       args:
         BUILD_CONFIGURATION: ${BUILD_CONFIGURATION:-Release}
     image: webapp:${BUILD_CONFIGURATION:-release}
     environment:      
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ASPNETCORE_URLS: http://+:8080
     ports:
       - "8080:8080"
-      - "8081:8081"
+      #- "8081:8081"
 
   db:
     image: postgres:15

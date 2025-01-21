@@ -10,6 +10,9 @@ EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{1FB9EB3C-5301-46E6-BEAE-BA1902D6545C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6F77D751-B21D-48B0-990D-059B19538C21}"
+	ProjectSection(SolutionItems) = preProject
+		src\client\nginx.conf = src\client\nginx.conf
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebAcceptanceTests", "tests\WebAcceptanceTests\WebAcceptanceTests.csproj", "{EC44100E-6259-47BF-A7F7-E784EAB8CBB8}"
 EndProject

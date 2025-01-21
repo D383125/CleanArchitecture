@@ -3,6 +3,7 @@ using Application.Modules;
 using Infrastructure.AiProviders;
 using Infrastructure.Configuration;
 using Infrastructure.DependencyInjection;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 using System.Reflection;
@@ -16,6 +17,10 @@ var builder = WebApplication.CreateBuilder(args);
 //ConfigureServices method is optional and defined inside startup class as mentioned in above code. It gets called by the host before the 'Configure' method to configure the app's services.
 builder.Services.AddControllers();
 builder.Services.AddWebServices();
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(8080); // Listen on port 5000 for HTTP
+});
 builder.Services.AddAutoMapper(typeof(RequestMappingProfile));
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.RegisterDIAttributes([Assembly.GetAssembly(typeof(ChatAssistantModule)), Assembly.GetAssembly(typeof(ChatGdpClient))]);
@@ -74,7 +79,16 @@ else
 //The Request handling pipeline is a sequence of middleware components where each component performs the operation on request and either call the next middleware component
 //or terminate the request. When a middleware component terminates the request, it's called Terminal Middleware as It prevents next middleware from processing the request.
 //You can add a middleware component to the pipeline by calling .Use... extension method as below.
-app.UseHttpsRedirection();
+
+//Nginx is rediceting to here s0 we can disable UseHttpsRedirection
+//app.UseHttpsRedirection();
+// Configure Kestrel to listen only on HTTP
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
+
 app.UseRouting();
 
 // Apply the CORS middleware before the controllers

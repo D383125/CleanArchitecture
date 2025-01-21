@@ -1,6 +1,4 @@
 ﻿using Application.Interfaces;
-using Domain;
-using Infrastructure.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
