@@ -9,8 +9,6 @@ namespace Infrastructure.DependencyInjection
     {
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
-            var temp = configuration.GetConnectionString("Database");
-
             services.AddDbContext<ApplicationDbContext>(
                 options =>
                     options
@@ -18,7 +16,7 @@ namespace Infrastructure.DependencyInjection
                     .UseLowerCaseNamingConvention()
             );
 
-            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));            
 
             return services;
         }

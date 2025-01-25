@@ -10,7 +10,7 @@ namespace Infrastructure.Services
     {
         private readonly IConnectionMultiplexer _connectionMultiplexer = redis;
 
-        public async Task Subscribe<T>(string channel, Action<T> handler)
+        public virtual async Task Subscribe<T>(string channel, Action<T> handler)
         {            
             var subscriber = _connectionMultiplexer.GetSubscriber();
 

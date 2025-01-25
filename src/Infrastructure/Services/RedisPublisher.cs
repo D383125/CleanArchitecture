@@ -11,7 +11,7 @@ namespace Infrastructure.Services
     {
         private readonly IConnectionMultiplexer _redis = redis;
 
-        public async Task PublishAsync<T>(Channel channel, T message)
+        public virtual async Task PublishAsync<T>(Channel channel, T message)
         {
             var database = _redis.GetSubscriber();
             var serializedMessage = JsonSerializer.Serialize(message);

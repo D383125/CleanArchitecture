@@ -2,7 +2,7 @@
 using Application.Modules;
 using Domain.Entities;
 using Microsoft.Extensions.Caching.Distributed;
-using WebApp.Contracts;
+using System.Security.Claims;
 
 namespace WebApp.MinimalApiEndpoints
 {
@@ -15,24 +15,25 @@ namespace WebApp.MinimalApiEndpoints
         {
             //TODO:            
             //3. Train Endpoint
-            app.MapPut("/chat", async (ChatAssistantModule chatAssistant, ChatDto chatDto, IDistributedCache cache, CancellationToken ct) => {
-                //TODO: Use AutoMapper
-                //Chat entity = new()
-                //{
-                //    Id = chatDto.Id,
-                //    CreatedOn = chatDto.CreatedOn,
-                //    LastModifiedOn = chatDto.LastModifiedOn,
-                //    CreatorId = chatDto.CreatorId,
-                //    Message = chatDto.Message,
-                //};
-                
+            app.MapPut("/chat", async (ChatAssistantModule chatAssistant, ChatDto chatDto, ClaimsPrincipal user, IDistributedCache cache, CancellationToken ct) => {
+
+                //Seperate in End point Validation
+                var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;                
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Results.BadRequest("User ID is required.");
+                }
+
                 await chatAssistant.SaveChatAsync(chatDto, ct);
                 await cache.RemoveAsync(ChatCacheKey, ct);
+
+                return Results.NoContent();
             })
             .WithName("SaveChats")
             .WithTags("Chat bot")
             .Produces(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status400BadRequest);
+            .Produces(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
 
             app.MapPost("/chat", async (ChatAssistantModule chatAssistant, ChatCompletionDto chatRequest, HttpContext context) =>
             {
