@@ -1,6 +1,6 @@
 ﻿using Duende.IdentityServer.Models;
 
-namespace Authentication
+namespace WebApp.Authentication
 {
     public class IdentityServerConfiguration
     {

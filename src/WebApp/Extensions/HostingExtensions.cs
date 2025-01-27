@@ -1,13 +1,12 @@
 ﻿using Application.Mapping;
 using Application.Modules;
-using Authentication;
-using System.Security.Claims;
 using Infrastructure.AiProviders;
 using Infrastructure.Configuration;
 using Infrastructure.DependencyInjection;
 using Microsoft.AspNetCore.HttpOverrides;
 using StackExchange.Redis;
 using System.Reflection;
+using WebApp.Authentication;
 using WebApp.MinimalApiEndpoints;
 using WebApp.Startup;
 
