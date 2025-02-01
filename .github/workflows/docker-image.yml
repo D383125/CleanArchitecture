@@ -50,8 +50,8 @@ jobs:
       run: docker tag webapp:$BUILD_CONFIGURATION breen25/webapp:latest
     
     #Step 8: Tag postgres image
-    - name: Tag postgres image
-      run: docker tag postgres:15 breen25/postgres:latest
+    #- name: Tag postgres image
+    #  run: docker tag postgres:15 breen25/postgres:latest
 
       #Step 9
     - name: Tag Nginx Reverse Proxy
