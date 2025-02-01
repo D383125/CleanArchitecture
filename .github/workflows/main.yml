@@ -55,7 +55,7 @@ jobs:
 
       #Step 9
     - name: Tag Nginx Reverse Proxy
-      run: docker tag nginx:alpine breen25/nginx:latest
+      run: docker tag cleanarchitecture-webfrontend:latest breen25/nginx:latest
 
 #TODO: Add docker token and username
     # Optional: Push the Docker images to a registry
