@@ -2,9 +2,9 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "develop" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "develop" ]
 
 jobs:
 
@@ -25,48 +25,50 @@ jobs:
 
     # Step 3: Restore dependencies
     - name: Restore dependencies
-      run: dotnet restore src/WebApp/WebApp.csproj
+      run: dotnet restore CleanArch.sln
 
     # Step 4: Build the .NET application
     - name: Build the application
-      run: dotnet build src/WebApp/WebApp.csproj --configuration Release --no-restore
+      run: dotnet build CleanArch.sln --configuration Release --no-restore
 
     # Step 5: Test
     - name: Test the application
-      run: dotnet test tests/Application.UnitTests/Application.UnitTests.csproj
+      run: dotnet test .\tests\Application.UnitTests\
 
     # Step 5: Publish the .NET application
     - name: Publish the application
-      run: dotnet publish src/WebApp/WebApp.csproj --configuration Release --output publish
+      run: dotnet publish CleanArch.sln --configuration Release --output publish
 
     # Step 6: Build Docker images
-    - name: Build webapp Docker image
-      run: docker build . -f src/WebApp/Dockerfile -t my-webapp:latest
+    - name: Build Docker images
+      run: docker compose build  
 
-    - name: Build nginx Docker image
-      run: docker build . -f src/client/nginx.conf -t my-nginx:latest
-
-    # Step 7: Tag images
+    # Step 7: Tag webapp image
     - name: Tag WebApp image
-      run: docker tag webapp:dev breen25/aibot:dev
+      run: docker tag webapp:dev breen25/webapp:latest
     
     #Step 8: Tag postgres image
     - name: Tag postgres image
-      run: docker tag postgres:15 breen25/aibot:15
+      run: docker tag postgres:15 breen25/postgres:latest
 
+      #Step 9
+    - name: Tag Nginx Reverse Proxy
+      run: docker tag nginx:latest breen25/nginx:latest
+
+#TODO: Add docker token and username
     # Optional: Push the Docker images to a registry
-    - name: Log in to DockerHub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+    #- name: Log in to DockerHub
+    #  uses: docker/login-action@v2
+    #  with:
+    #    username: ${{ secrets.DOCKER_USERNAME }}
+    #    password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Push webapp image
-      run: docker push webapp:dev
+    #- name: Push webapp image
+    #  run: docker push breen25/webapp:latest
 
-    #- name: Push nginx image
-    #  run: docker push my-nginx:latest
+    #- name: Push postgres image
+    #  run: docker push breen25/postgres:latest
 
-    - name: Push Postgres image
-      run: docker push postgres:15
+    #- name: Push PNginx image
+    #  run: docker push breen25/nginx:latest
 
