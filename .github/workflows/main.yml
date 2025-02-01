@@ -73,5 +73,3 @@ jobs:
 
     #- name: Push PNginx image
     #  run: docker push breen25/nginx:latest
-
-Merge branch 'develop' of https://github.com/D383125/CleanArchitecture into develop · D383125/CleanArchitecture@cdc0090
