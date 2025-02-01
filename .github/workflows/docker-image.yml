@@ -33,7 +33,7 @@ jobs:
 
     # Step 5: Test
     - name: Test the application
-      run: dotnet test .\tests\Application.UnitTests\
+      run: dotnet test .\tests\Application.UnitTests\Application.UnitTests.csproj
 
     # Step 5: Publish the .NET application
     - name: Publish the application
