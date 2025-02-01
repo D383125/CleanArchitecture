@@ -1,25 +1,4 @@
-Skip to content
-Navigation Menu
-D383125
-CleanArchitecture
-
-Type / to search
-Code
-Issues
-Pull requests
-Actions
-Projects
-Wiki
-Security
-Insights
-Settings
-Docker Image CI
-Merge branch 'develop' of https://github.com/D383125/CleanArchitectur… #11
-Jobs
-Run details
-Workflow file for this run
-.github/workflows/docker-image.yml at cdc0090
-name: Docker Image CI
+name: main
 
 on:
   push:
