@@ -11,6 +11,8 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    env:
+     BUILD_CONFIGURATION: Release
 
     steps:
     # Step 1: Checkout the repository
@@ -45,7 +47,7 @@ jobs:
 
     # Step 7: Tag webapp image
     - name: Tag WebApp image
-      run: docker tag webapp:dev breen25/webapp:latest
+      run: docker tag webapp:$BUILD_CONFIGURATION breen25/webapp:latest
     
     #Step 8: Tag postgres image
     - name: Tag postgres image
