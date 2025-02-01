@@ -38,3 +38,12 @@
 
 /ssl
 /src/WebApp/appsettings.Development.json
+/src/Application/bin/Release/net8.0
+/src/DataMigration/bin/Release/net8.0
+/src/Domain/bin/Release/net8.0/publish
+/src/Domain/bin/Release/net8.0
+/src/Infrastructure/bin/Release/net8.0
+/src/WebApp/bin/Release/net8.0
+/tests/Application.UnitTests/bin/Release/net8.0
+/tests/Domain.UnitTests/bin/Release/net8.0
+/tests/WebAcceptanceTests/bin/Release/net8.0

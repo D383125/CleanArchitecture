@@ -4,7 +4,7 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        var connectionString = "Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=SupportBot";        
+        var connectionString = "****";
         EnsureDatabase.For.PostgresqlDatabase(connectionString);
 
         var upgrader =

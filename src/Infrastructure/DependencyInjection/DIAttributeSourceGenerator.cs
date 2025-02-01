@@ -4,6 +4,8 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Infrastructure.DependencyInjection
 {
+    //This is a pre .Net 9 Source Generator Impl.
+    //ISourceGenerator will change to an IIncrementalGenerator with a Predicate to filter and Transform to work on the filtered (target) code
     [Generator]
     public class DIAttributeSourceGenerator : ISourceGenerator
     {

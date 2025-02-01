@@ -11,8 +11,11 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+<<<<<<< Updated upstream
     env:
      BUILD_CONFIGURATION: Release
+=======
+>>>>>>> Stashed changes
 
     steps:
     # Step 1: Checkout the repository
@@ -35,7 +38,11 @@ jobs:
 
     # Step 5: Test
     - name: Test the application
+<<<<<<< Updated upstream
       run: dotnet test ./tests/Application.UnitTests/Application.UnitTests.csproj
+=======
+      run: dotnet test ./tests/Application.UnitTests/
+>>>>>>> Stashed changes
 
     # Step 5: Publish the .NET application
     - name: Publish the application
@@ -47,16 +54,25 @@ jobs:
 
     # Step 7: Tag webapp image
     - name: Tag WebApp image
+<<<<<<< Updated upstream
       run: docker tag webapp:$BUILD_CONFIGURATION breen25/webapp:latest
     
     #Step 8: Tag postgres image
     #- name: Tag postgres image
     #  run: docker tag postgres:15 breen25/postgres:latest
+=======
+      run: docker tag webapp:dev breen25/webapp:latest
+    
+    #Step 8: Tag postgres image
+    - name: Tag postgres image
+      run: docker tag postgres:15 breen25/postgres:latest
+>>>>>>> Stashed changes
 
       #Step 9
     - name: Tag Nginx Reverse Proxy
       run: docker tag nginx:latest breen25/nginx:latest
 
+<<<<<<< Updated upstream
 #TODO: Add docker token and username
     # Optional: Push the Docker images to a registry
     #- name: Log in to DockerHub
@@ -73,4 +89,21 @@ jobs:
 
     #- name: Push PNginx image
     #  run: docker push breen25/nginx:latest
+=======
+    # Optional: Push the Docker images to a registry
+    - name: Log in to DockerHub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Push webapp image
+      run: docker push breen25/webapp:latest
+
+    - name: Push postgres image
+      run: docker push breen25/postgres:latest
+
+    - name: Push PNginx image
+      run: docker push breen25/nginx:latest
+>>>>>>> Stashed changes
 

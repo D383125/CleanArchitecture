@@ -6,7 +6,6 @@ using Infrastructure.DependencyInjection;
 using Microsoft.AspNetCore.HttpOverrides;
 using StackExchange.Redis;
 using System.Reflection;
-using WebApp.Authentication;
 using WebApp.MinimalApiEndpoints;
 using WebApp.Startup;
 
@@ -64,20 +63,22 @@ namespace WebApp.Extensions
             });
             //Validate Container config and scopes e.g. no scoped servies referenced as Singleton
             builder.Host.UseDefaultServiceProvider(c => c.ValidateScopes = true);
-
+#if OpenIdConnect
+            //Auth method has yet to be deretmeined. Ie Asp.Net Core Identity Service or a 3rd party OpenId Connect SSO one 
             //Confiure Duenabe SSO pipeline
             builder.Services.AddIdentityServer()
-            .AddInMemoryApiScopes(IdentityServerConfiguration.Scopes)
-            .AddInMemoryClients(IdentityServerConfiguration.Clients);
+                .AddInMemoryIdentityResources(IdentityServerConfiguration.IdentityResources)
+                .AddInMemoryApiScopes(IdentityServerConfiguration.Scopes)
+                .AddInMemoryClients(IdentityServerConfiguration.Clients);
 
-            //And the token mechism
+            //And the token mechism - this will be valid for non OpenId as an bearer auth token anyway
             builder.Services.AddAuthentication()
                 .AddJwtBearer(options =>
             {
                 options.Authority = "http://localhost:8080"; // read from config
                 options.TokenValidationParameters.ValidateAudience = false;
             });
-
+#endif
             return builder.Build();
         }
 
