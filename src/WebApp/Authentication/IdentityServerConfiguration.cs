@@ -1,7 +1,4 @@
-﻿using Duende.IdentityServer;
-using Duende.IdentityServer.Models;
-
-namespace WebApp.Authentication
+﻿namespace WebApp.Authentication
 {
 #if OpenIdConnect
     public class IdentityServerConfiguration

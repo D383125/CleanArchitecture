@@ -22,7 +22,7 @@ namespace Infrastructure.AiProviders
             var client = _client.GetChatClient(model);
 
             var nativeMessages = messages.Select<KeyValuePair<string, string>, ChatMessage>
-                (kvp => 
+                (kvp =>
             {
                 return kvp.Key.ToLower() switch
                 {
@@ -36,7 +36,7 @@ namespace Infrastructure.AiProviders
             ChatCompletionOptions options = new()
             {
                 Temperature = 0
-            };            
+            };
 
             System.ClientModel.AsyncCollectionResult<StreamingChatCompletionUpdate> completionUpdates = client.CompleteChatStreamingAsync(nativeMessages, options);
 

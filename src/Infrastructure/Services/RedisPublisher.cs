@@ -15,7 +15,7 @@ namespace Infrastructure.Services
         {
             var database = _redis.GetSubscriber();
             var serializedMessage = JsonSerializer.Serialize(message);
-            await database.PublishAsync(new(Enum.GetName(channel)!, RedisChannel.PatternMode.Literal), serializedMessage); 
+            await database.PublishAsync(new(Enum.GetName(channel)!, RedisChannel.PatternMode.Literal), serializedMessage);
         }
     }
 }

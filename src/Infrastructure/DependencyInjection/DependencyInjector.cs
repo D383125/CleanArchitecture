@@ -16,7 +16,7 @@ namespace Infrastructure.DependencyInjection
                     .UseLowerCaseNamingConvention()
             );
 
-            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));            
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
             return services;
         }

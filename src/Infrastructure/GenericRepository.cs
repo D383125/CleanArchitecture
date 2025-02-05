@@ -91,7 +91,7 @@ namespace Infrastructure
                 await AddAsync(entity);
             }
             else
-            {                
+            {
                 await UpdateAsync(entity);
             }
         }

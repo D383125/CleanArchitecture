@@ -18,11 +18,11 @@ internal class Program
         var upgrader =
             DeployChanges.To
                 .PostgresqlDatabase(connectionString)
-                .WithScriptsFromFileSystem("SqlScripts") 
+                .WithScriptsFromFileSystem("SqlScripts")
                 .LogToConsole()
                 .Build();
 
-        
+
         var result = upgrader.PerformUpgrade();
 
         if (!result.Successful)
@@ -39,6 +39,6 @@ internal class Program
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("Database upgrade successful!");
         Console.ResetColor();
-      
+
     }
 }

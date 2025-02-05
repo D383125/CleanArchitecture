@@ -10,8 +10,8 @@ namespace Infrastructure
             : base(options)
         {
             ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-        }                
-        
+        }
+
         public DbSet<Chat> ChatHistory { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

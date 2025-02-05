@@ -13,9 +13,9 @@ namespace Application.UnitTests
 
         public TestContext()
         {
-             _postgres = new PostgreSqlBuilder()
-                .WithImage("postgres:15-alpine")
-                .Build();
+            _postgres = new PostgreSqlBuilder()
+               .WithImage("postgres:15-alpine")
+               .Build();
         }
 
         public T CreateService<T>(params object[] args) where T : class
@@ -24,13 +24,13 @@ namespace Application.UnitTests
 
             return m.Object;
         }
-        
+
         public async Task InitializeAsync()
         {
             await _postgres.StartAsync();
 
             System.Diagnostics.Debug.WriteLine($"Running container {_postgres.Name} in a '{_postgres.State.ToString()}' state.");
-            
+
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseNpgsql(_postgres.GetConnectionString())
                 .Options;
@@ -51,9 +51,10 @@ namespace Application.UnitTests
             Assembly dependencyAssembly = Assembly.Load("DataMigration");
             var script = dependencyAssembly.GetManifestResourceStream("DataMigration.SqlScripts.0001-CreateChatHistoryTable.sql");
 
-            if (script != null) {
+            if (script != null)
+            {
                 using StreamReader sr = new(script);
-                var contents = sr.ReadToEnd();                
+                var contents = sr.ReadToEnd();
 
                 await _postgres.ExecScriptAsync(contents);
             }

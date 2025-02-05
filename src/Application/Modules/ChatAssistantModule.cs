@@ -1,9 +1,9 @@
-﻿using Domain.Attributes;
-using Application.Common.Interface;
-using Domain.Entities;
-using Application.Interfaces;
+﻿using Application.Common.Interface;
 using Application.Dto;
+using Application.Interfaces;
 using AutoMapper;
+using Domain.Attributes;
+using Domain.Entities;
 using Domain.Events;
 
 namespace Application.Modules
@@ -25,7 +25,7 @@ namespace Application.Modules
         }
 
         public async IAsyncEnumerable<string> StreamChatCompletionAsync(IEnumerable<KeyValuePair<string, string>> messages, string model)
-        {   
+        {
             ArgumentNullException.ThrowIfNull(nameof(messages));
 
             var completionUpdates = _chatClient.CompleteChatStreaming(messages, model);
@@ -36,7 +36,7 @@ namespace Application.Modules
                 {
                     yield return completionUpdate;
                 }
-            }         
+            }
         }
 
         public async Task<IEnumerable<Chat>> GetChatAsync(CancellationToken cancellationToken)

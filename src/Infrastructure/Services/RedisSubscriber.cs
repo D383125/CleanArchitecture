@@ -11,7 +11,7 @@ namespace Infrastructure.Services
         private readonly IConnectionMultiplexer _connectionMultiplexer = redis;
 
         public virtual async Task Subscribe<T>(string channel, Action<T> handler)
-        {            
+        {
             var subscriber = _connectionMultiplexer.GetSubscriber();
 
             await subscriber.SubscribeAsync(new RedisChannel(channel, RedisChannel.PatternMode.Literal), (redisChannel, message) =>
@@ -20,12 +20,12 @@ namespace Infrastructure.Services
                 {
                     var deselizedMessage = JsonSerializer.Deserialize<T>(message!);
 
-                    if (deselizedMessage != null) 
+                    if (deselizedMessage != null)
                     {
                         handler(deselizedMessage);
                     }
                 }
-            });            
+            });
         }
     }
 }

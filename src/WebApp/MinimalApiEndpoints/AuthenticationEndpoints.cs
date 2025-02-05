@@ -1,6 +1,6 @@
-﻿using WebApp.Contracts;
-using Infrastructure;
-using System.Security.Claims;
+﻿//using Infrastructure;
+//using System.Security.Claims;
+//using WebApp.Contracts;
 
 namespace WebApp.MinimalApiEndpoints
 {
@@ -8,20 +8,20 @@ namespace WebApp.MinimalApiEndpoints
     {
         internal static void MapAuthenticationEndpoints(this IEndpointRouteBuilder app)
         {
-            app.MapGet("identity", (ClaimsPrincipal user) => user.Claims.Select(c => new { c.Type, c.Value }))
-                .RequireAuthorization();
+            //app.MapGet("identity", (ClaimsPrincipal user) => user.Claims.Select(c => new { c.Type, c.Value }))
+            //    .RequireAuthorization();
 
-            app.MapPost("authenticate", async (
-                LogInRequest request,
-                ApplicationDbContext context,
-                CancellationToken ct) =>
-            {                
-                throw new NotImplementedException();
-            })
-            .WithName("Login")
-            .WithTags("Authenticate")
-            .Produces(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status400BadRequest);
+            //app.MapPost("authenticate", async (
+            //    LogInRequest request,
+            //    ApplicationDbContext context,
+            //    CancellationToken ct) =>
+            //{
+            //    throw new NotImplementedException();
+            //})
+            //.WithName("Login")
+            //.WithTags("Authenticate")
+            //.Produces(StatusCodes.Status200OK)
+            //.Produces(StatusCodes.Status400BadRequest);
         }
     }
 }

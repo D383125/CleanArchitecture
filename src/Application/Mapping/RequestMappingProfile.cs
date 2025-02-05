@@ -7,7 +7,7 @@ namespace Application.Mapping
     public class RequestMappingProfile : Profile
     {
         public RequestMappingProfile()
-        {            
+        {
             CreateMap<ChatDto, Chat>();
         }
     }

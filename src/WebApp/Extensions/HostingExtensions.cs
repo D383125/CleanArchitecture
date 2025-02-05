@@ -30,6 +30,7 @@ namespace WebApp.Extensions
             //TODO: Use Source genertor over reflection
             //builder.Services.AddGeneratedDIRegistrations();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddHealthChecks(); //TODO: Impleiment
 
             //2. Once services are added, configure the middleware pipleine
             //Configure method specifies how the app responds to HTTP request and response. ApplicationBuilder instance's 'Use...' extension method is used to add one or more middleware components to request pipeline.

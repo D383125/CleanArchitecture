@@ -15,10 +15,11 @@ namespace WebApp.MinimalApiEndpoints
         {
             //TODO:            
             //3. Train Endpoint
-            app.MapPut("/chat", async (ChatAssistantModule chatAssistant, ChatDto chatDto, ClaimsPrincipal user, IDistributedCache cache, CancellationToken ct) => {
+            app.MapPut("/chat", async (ChatAssistantModule chatAssistant, ChatDto chatDto, ClaimsPrincipal user, IDistributedCache cache, CancellationToken ct) =>
+            {
 
                 //Seperate in End point Validation
-                var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;                
+                var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Results.BadRequest("User ID is required.");
@@ -42,7 +43,7 @@ namespace WebApp.MinimalApiEndpoints
                     context.Response.ContentType = "text/plain";
                     IEnumerable<KeyValuePair<string, string>> nativeMessages = chatRequest.Messages
                         .Select(m => new KeyValuePair<string, string>(m.Role, m.Content));
-                  
+
                     await foreach (var chunk in chatAssistant.StreamChatCompletionAsync(nativeMessages, chatRequest.Model))
                     {
                         await context.Response.WriteAsync(chunk);
@@ -61,20 +62,20 @@ namespace WebApp.MinimalApiEndpoints
             .Produces(StatusCodes.Status400BadRequest);
 
             app.MapGet("/chat", async (
-                ChatAssistantModule chatAssistant, 
-                IDistributedCache cache, 
-                HttpContext context, 
+                ChatAssistantModule chatAssistant,
+                IDistributedCache cache,
+                HttpContext context,
                 CancellationToken ct) =>
             {
-            var chatHistory = await cache.GetAsync(ChatCacheKey, 
-                async token => await chatAssistant.GetChatAsync(ct),
-                    CacheOptions.DefaultExpiration,
-                    ct);
+                var chatHistory = await cache.GetAsync(ChatCacheKey,
+                    async token => await chatAssistant.GetChatAsync(ct),
+                        CacheOptions.DefaultExpiration,
+                        ct);
 
-            return chatHistory is null ? Results.NotFound() : Results.Ok(chatHistory);
+                return chatHistory is null ? Results.NotFound() : Results.Ok(chatHistory);
 
 
-        })
+            })
             .WithName("Get Chat History")
             .WithTags("Chat bot")
             .Produces<IEnumerable<Chat>>(StatusCodes.Status200OK)

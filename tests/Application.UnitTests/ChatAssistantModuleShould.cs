@@ -19,7 +19,7 @@ namespace Application.UnitTests
     {
         //Move to TextContext
         private readonly IMapper _mapper;
-        private readonly Mock<RedisPublisher> _redisPublisherMock;        
+        private readonly Mock<RedisPublisher> _redisPublisherMock;
 
         public ChatAssistantModuleShould()
         {
@@ -35,23 +35,23 @@ namespace Application.UnitTests
                 .Setup(m => m.GetSubscriber(It.IsAny<object>()))
                 .Returns(subscriberMock.Object);
             _redisPublisherMock = new Mock<RedisPublisher>(connectionMultiplexerMock.Object);
-        }                
+        }
 
-        [Fact]        
+        [Fact]
         public async Task ReturnConversationFromStreamChatCompletion()
-        {            
+        {
             IChatClient mockChatClient = new MockChatClient();
             var context = new TestContext();
             var repositoryMock = context.CreateService<IGenericRepository<Chat>>();
             var sut = new ChatAssistantModule(repositoryMock, mockChatClient, _mapper, _redisPublisherMock.Object);
 
             List<string> results = [];
-            await foreach(var chunk in sut.StreamChatCompletionAsync([], string.Empty))
+            await foreach (var chunk in sut.StreamChatCompletionAsync([], string.Empty))
             {
                 results.Add(chunk);
             }
 
-            Assert.Equal(new[] { "Hello", "How are you?" }, results);  
+            Assert.Equal(new[] { "Hello", "How are you?" }, results);
         }
 
         [Fact]
@@ -70,7 +70,7 @@ namespace Application.UnitTests
                 LastModifiedOn = DateTime.UtcNow,
             };
 
-            await sut.SaveChatAsync(chatRequest, CancellationToken.None);            
+            await sut.SaveChatAsync(chatRequest, CancellationToken.None);
             var created = context.DbContext.ChatHistory.Where(c => c.CreatorId == chatRequest.CreatorId)
                 .Select(c => c)
                 .FirstOrDefault();
@@ -79,5 +79,5 @@ namespace Application.UnitTests
             Assert.True(created.Id != default);
             _redisPublisherMock.Verify(m => m.PublishAsync(Channel.ChatSaved, It.Is<ChatSavedEvent>(e => e.ChatId == created.Id)), Times.Once(), "PublishAsync was not called correctly");
         }
-    }    
+    }
 }
