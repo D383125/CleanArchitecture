@@ -13,6 +13,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AdaskoTheBeAsT.SecurityCodeScan.VS2022" Version="5.6.7.32">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="dbup" Version="5.0.41" />
     <PackageReference Include="dbup-postgresql" Version="5.0.40" />
   </ItemGroup>

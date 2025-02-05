@@ -12,6 +12,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AdaskoTheBeAsT.SecurityCodeScan.VS2022" Version="5.6.7.32">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
     <PackageReference Include="Duende.IdentityServer" Version="7.1.0" />
     <PackageReference Include="EFCore.NamingConventions" Version="9.0.0" />
