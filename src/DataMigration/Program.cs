@@ -4,13 +4,21 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        var connectionString = "****";
+        //TODO: Read from Secrets manager
+        var connectionString = Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING");
+
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            Console.WriteLine("Error: Connection string not found.");
+            return;
+        }
+
         EnsureDatabase.For.PostgresqlDatabase(connectionString);
 
         var upgrader =
             DeployChanges.To
                 .PostgresqlDatabase(connectionString)
-                .WithScriptsFromFileSystem("SqlScripts") // Folder containing your SQL scripts
+                .WithScriptsFromFileSystem("SqlScripts") 
                 .LogToConsole()
                 .Build();
 
