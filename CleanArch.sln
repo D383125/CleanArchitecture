@@ -30,6 +30,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "src\Domain\Domain
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataMigration", "src\DataMigration\DataMigration.csproj", "{95486552-213B-4F24-9F5C-A501B3986627}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{06A51BB6-AC99-4AA9-A381-C1B1DCD917BD}"
+	ProjectSection(SolutionItems) = preProject
+		.git\hooks\pre-commit = .git\hooks\pre-commit
+		.git\hooks\pre-commit.ps1 = .git\hooks\pre-commit.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
