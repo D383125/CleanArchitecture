@@ -1,25 +1,4 @@
-Skip to content
-Navigation Menu
-D383125
-CleanArchitecture
-
-Type / to search
-Code
-Issues
-Pull requests
-Actions
-Projects
-Wiki
-Security
-Insights
-Settings
-Docker Image CI
-Merge branch 'develop' of https://github.com/D383125/CleanArchitectur… #11
-Jobs
-Run details
-Workflow file for this run
-.github/workflows/docker-image.yml at cdc0090
-name: Docker Image CI
+name: main
 
 on:
   push:
@@ -76,7 +55,7 @@ jobs:
 
       #Step 9
     - name: Tag Nginx Reverse Proxy
-      run: docker tag nginx:alpine breen25/nginx:latest
+      run: docker tag cleanarchitecture-webfrontend:latest breen25/nginx:latest
 
 #TODO: Add docker token and username
     # Optional: Push the Docker images to a registry
@@ -94,5 +73,3 @@ jobs:
 
     #- name: Push PNginx image
     #  run: docker push breen25/nginx:latest
-
-Merge branch 'develop' of https://github.com/D383125/CleanArchitecture into develop · D383125/CleanArchitecture@cdc0090
