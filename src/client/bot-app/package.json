@@ -27,7 +27,7 @@
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.54.0",
     "react-placeholder": "^4.1.0",
-    "react-router-dom": "^7.0.1",
+    "react-router-dom": "^7.12.0",
     "react-scripts": "5.0.1",
     "typescript": "^4.4.2",
     "web-vitals": "^2.1.0",
